@@ -42,23 +42,22 @@ export class TableEditorModal extends Modal {
             Array.from(row.cells).forEach((cell) => {
                 const td = document.createElement("td");
 
-                const div = document.createElement("div");
-                div.innerHTML = cell.innerHTML;
-                div.contentEditable = "true";
-                div.addEventListener("keydown", (e) => {
+                td.innerHTML = cell.innerHTML;
+                td.contentEditable = "true";
+
+                // prevent enter key from creating new <div>
+                td.addEventListener("keydown", (e) => {
                     if (e.key === "Enter") {
                         e.preventDefault();
                         document.execCommand("insertLineBreak");
                     }
                 });
-                div.addClass("table-editor-div");
 
                 // Detect active cell
-                div.addEventListener("focus", () => {
-                    activeCell = div;
+                td.addEventListener("focus", () => {
+                    activeCell = td;
                 });
 
-                td.appendChild(div);
                 tr.appendChild(td);
             });
 
@@ -81,6 +80,7 @@ export class TableEditorModal extends Modal {
             this.close();
         };
 
+        // create toolbar
         const toolbarEl = contentEl.createDiv();
         new TableToolbar(toolbarEl, () => activeCell, setActiveCell);
 
@@ -92,9 +92,9 @@ export class TableEditorModal extends Modal {
 
         const htmlRows = rows.map((row) => {
             const cells = Array.from(
-                row.querySelectorAll("td div")
-            ).map((div) => {
-                return `<td>${div.innerHTML}</td>`
+                row.querySelectorAll("td")
+            ).map((td) => {
+                return `<td>${td.innerHTML}</td>`
             });
 
             return `<tr>${cells.join("")}</tr>`;

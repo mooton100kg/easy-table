@@ -126,12 +126,9 @@ export class TableToolbar {
         rows.forEach((row) => {
             const newTd = document.createElement("td");
 
-            const div = document.createElement("div");
-            div.contentEditable = "true";
-            div.classList.add("table-editor-cell");
-            this.bindCell(div);
-
-            newTd.appendChild(div);
+            newTd.contentEditable = "true";
+            newTd.classList.add("table-editor-cell");
+            this.bindCell(newTd);
 
             const cells = Array.from(row.children);
             // insert col
@@ -163,12 +160,10 @@ export class TableToolbar {
         cells.forEach(() => {
             const td = document.createElement("td");
 
-            const div = document.createElement("div");
-            div.contentEditable = "true";
-            div.classList.add("table-editor-cell");
-            this.bindCell(div);
+            td.contentEditable = "true";
+            td.classList.add("table-editor-cell");
+            this.bindCell(td);
 
-            td.appendChild(div);
             newRow.appendChild(td);
         });
 
@@ -226,9 +221,9 @@ export class TableToolbar {
         });
     }
 
-    bindCell(div: HTMLElement) {
-        div.addEventListener("focus", () => {
-            this.setActiveCell(div);
+    bindCell(td: HTMLElement) {
+        td.addEventListener("focus", () => {
+            this.setActiveCell(td);
         });
     }
 }
