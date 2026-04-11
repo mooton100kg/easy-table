@@ -53,6 +53,14 @@ export class TableToolbar {
         this.createButton(groupCell, "chevron-down", () => {
             this.addRow("insert");
         });
+
+        this.createButton(groupCell, "chevrons-right", () => {
+            this.addCol("add");
+        });
+
+        this.createButton(groupCell, "chevron-right", () => {
+            this.addCol("insert");
+        });
     }
 
     // Button creator
@@ -81,6 +89,46 @@ export class TableToolbar {
             cell.focus();
             action();
         }
+    }
+
+    // add col function
+    addCol(type: "insert" | "add") {
+        const cell = this.activeCell();
+        if (!cell) return;
+
+        const currentRow = cell.closest("tr");
+        if (!currentRow) return;
+
+        const table = currentRow.closest("table");
+        if (!table) return;
+
+        const cellsInRow = Array.from(currentRow.children);
+
+        // find index of current cell
+        const colIndex = cellsInRow.indexOf(cell.closest("td")!);
+
+        // insert new cell in every row
+        const rows = Array.from(table.querySelectorAll("tr"));
+
+        rows.forEach((row) => {
+            const newTd = document.createElement("td");
+
+            const div = document.createElement("div");
+            div.contentEditable = "true";
+            div.classList.add("table-editor-cell");
+            this.bindCell(div);
+
+            newTd.appendChild(div);
+
+            const cells = Array.from(row.children);
+            // insert col
+            if (type === "insert") {
+                row.insertAfter(newTd, cells[colIndex] ?? null)
+            }
+            else if (type === "add") {
+                row.appendChild(newTd)
+            }
+        })
     }
 
     // add row function
