@@ -28,38 +28,46 @@ export class TableToolbar {
 
         // ============== Button
         // format
-        this.createButton(groupFormat, "bold", () => {
+        this.createButton(groupFormat, "bold", "Bold", () => {
             document.execCommand("bold");
         });
 
-        this.createButton(groupFormat, "italic", () => {
+        this.createButton(groupFormat, "italic", "Italic", () => {
             document.execCommand("italic");
         });
 
         // list
-        this.createButton(groupList, "list", () => {
+        this.createButton(groupList, "list", "Insert Unordered List", () => {
             document.execCommand("insertUnorderedList");
         });
 
-        this.createButton(groupList, "list-ordered", () => {
+        this.createButton(groupList, "list-ordered", "Insert Ordered List", () => {
             document.execCommand("insertOrderedList");
         });
 
         // cell
-        this.createButton(groupCell, "chevrons-down", () => {
+        this.createButton(groupCell, "chevrons-down", "Add Row Below", () => {
             this.addRow("add");
         });
 
-        this.createButton(groupCell, "chevron-down", () => {
+        this.createButton(groupCell, "chevron-down", "Insert Row Below", () => {
             this.addRow("insert");
         });
 
-        this.createButton(groupCell, "chevrons-right", () => {
+        this.createButton(groupCell, "chevrons-right", "Add Column Right", () => {
             this.addCol("add");
         });
 
-        this.createButton(groupCell, "chevron-right", () => {
+        this.createButton(groupCell, "chevron-right", "Insert Column Right", () => {
             this.addCol("insert");
+        });
+
+        this.createButton(groupCell, "chevrons-down-up", "Delete Column", () => {
+            this.deleteCol();
+        });
+
+        this.createButton(groupCell, "chevrons-right-left", "Delete Row", () => {
+            this.deleteRow();
         });
     }
 
@@ -67,6 +75,7 @@ export class TableToolbar {
     createButton(
         parent: HTMLElement,
         icon: string,
+        title: string,
         action: () => void
     ) {
         const btn = parent.createEl("button");
@@ -81,6 +90,10 @@ export class TableToolbar {
             setIcon(btn, icon);
         }
 
+        // add title
+        btn.setAttribute("title", title);
+
+        // add onclick action
         btn.onclick = () => {
             // check if there are any focused cell
             const cell = this.activeCell();
@@ -168,6 +181,49 @@ export class TableToolbar {
                 currentRow.nextSibling
             );
         }
+    }
+
+    deleteRow() {
+        const cell = this.activeCell();
+        if (!cell) return;
+
+        const currentRow = cell.closest("tr");
+        if (!currentRow) return;
+
+        const table = currentRow.closest("table");
+        if (!table) return;
+
+        const rows = table.querySelectorAll("tr");
+
+        // prevent deleting last row
+        if (rows.length === 1) return;
+
+        currentRow.remove();
+    }
+
+    deleteCol() {
+        const cell = this.activeCell();
+        if (!cell) return;
+
+        const currentRow = cell.closest("tr");
+        if (!currentRow) return;
+
+        const table = currentRow.closest("table");
+        if (!table) return;
+
+        // find column index
+        const cellsInRow = Array.from(currentRow.children);
+        const colIndex = cellsInRow.indexOf(cell.closest("td")!);
+
+        const rows = table.querySelectorAll("tr");
+
+        // prevent deleting last column
+        if (cellsInRow.length === 1) return;
+
+        rows.forEach((row) => {
+            const cells = Array.from(row.children);
+            cells[colIndex]?.remove();
+        });
     }
 
     bindCell(div: HTMLElement) {
