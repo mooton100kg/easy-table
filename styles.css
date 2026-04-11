@@ -54,10 +54,17 @@
 
 /* buttons */
 .table-editor-toolbar button {
+    width: 32px;
+    height: 32px;
     padding: 4px 8px;
     border: 1px solid var(--background-modifier-border);
     background: var(--background-secondary);
     border-radius: 4px;
+}
+
+.table-editor-toolbar button svg {
+    width: 18px;
+    height: 18px;
 }
 
 .table-editor-toolbar button:hover {

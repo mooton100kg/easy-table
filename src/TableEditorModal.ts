@@ -28,6 +28,10 @@ export class TableEditorModal extends Modal {
 
         let activeCell: HTMLElement | null = null;
 
+        function setActiveCell(el: HTMLElement) {
+            activeCell = el;
+        }
+
         // Create UI table
         const uiTable = document.createElement("table");
         uiTable.addClass("table-editor-table");
@@ -78,7 +82,7 @@ export class TableEditorModal extends Modal {
         };
 
         const toolbarEl = contentEl.createDiv();
-        new TableToolbar(toolbarEl, () => activeCell);
+        new TableToolbar(toolbarEl, () => activeCell, setActiveCell);
 
     }
 
