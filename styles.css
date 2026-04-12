@@ -70,3 +70,9 @@
 .table-editor-toolbar button:hover {
     background: var(--background-modifier-hover);
 }
+
+/* selected state */
+.selected-cell {
+    outline: 2px solid var(--interactive-accent);
+    background: var(--background-modifier-hover);
+}
