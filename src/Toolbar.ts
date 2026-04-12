@@ -49,7 +49,7 @@ export class TableToolbar {
             this.controller.mergeCells();
         });
 
-        this.createButton(groupCell, "link-2-off", "Unmerge Cell", () => {
+        this.createButton(groupCell, Icons.link2off, "Unmerge Cell", () => {
             this.controller.unmergeCells();
         });
 
