@@ -1,8 +1,11 @@
 /* =================== Modal style =================== */
+
+/* UI background */
 .table-editor-modal {
     padding: 10px;
 }
 
+/* =================== table style */
 .table-editor-table {
     width: 100%;
     border-collapse: collapse;
@@ -14,13 +17,13 @@
     padding: 4px;
 }
 
-.table-editor-div {
-    width: 100%;
-    border: none;
-    outline: none;
-    background: transparent;
+/* selected state */
+.selected-cell {
+    outline: 2px solid var(--interactive-accent);
+    background: var(--background-modifier-hover);
 }
 
+/* =================== save btn */
 .table-editor-save {
     margin-top: 10px;
     padding: 6px 10px;
@@ -31,7 +34,7 @@
     cursor: pointer;
 }
 
-
+/* =================== toolbar style */
 .table-editor-toolbar {
     display: flex;
     gap: 8px;
@@ -40,7 +43,7 @@
     margin-bottom: 8px;
 }
 
-/* group like Word sections */
+/* group sections */
 .toolbar-group {
     display: flex;
     gap: 4px;
@@ -68,11 +71,5 @@
 }
 
 .table-editor-toolbar button:hover {
-    background: var(--background-modifier-hover);
-}
-
-/* selected state */
-.selected-cell {
-    outline: 2px solid var(--interactive-accent);
     background: var(--background-modifier-hover);
 }

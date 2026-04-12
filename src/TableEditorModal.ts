@@ -45,16 +45,10 @@ export class TableEditorModal extends Modal {
             activeCell = el;
         }
 
-        const uiTable = document.createElement("table");
-        uiTable.addClass("table-editor-table");
+        table.addClass("table-editor-table");
 
-        Array.from(table.rows).forEach((row) => {
-            const tr = document.createElement("tr");
-
-            Array.from(row.cells).forEach((cell) => {
-                const td = document.createElement("td");
-
-                td.innerHTML = cell.innerHTML;
+        Array.from(table.rows).forEach((tr) => {
+            Array.from(tr.cells).forEach((td) => {
                 td.contentEditable = "true";
 
                 // prevent enter key from creating new <div>
@@ -85,45 +79,36 @@ export class TableEditorModal extends Modal {
                         td.classList.add("selected-cell");
                     }
                 });
-                tr.appendChild(td);
-
             });
-            uiTable.appendChild(tr);
-
         });
-        contentEl.appendChild(uiTable);
+        contentEl.appendChild(table);
 
         // ======================= create save button
-        const saveBtn = contentEl.createEl("button", {
-            text: "Save"
-        });
+        const saveBtn = contentEl.createEl("button", { text: "Save" });
 
         saveBtn.onclick = () => {
-            const updatedHtml = this.buildHtml(uiTable);
+            const updatedHtml = this.buildHtml(table);
             const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 
             if (!view) return;
-            view.editor.replaceSelection(updatedHtml);
+            view.editor.replaceSelection(table.outerHTML);
             this.close();
+
         };
 
     }
 
-    //Convert uiTable back to normal table
-    buildHtml(uiTable: HTMLTableElement): string {
-        const rows = Array.from(uiTable.querySelectorAll("tr"));
-
-        const htmlRows = rows.map((row) => {
-            const cells = Array.from(
-                row.querySelectorAll("td")
-            ).map((td) => {
-                return `<td>${td.innerHTML}</td>`
+    //Convert table back to normal table
+    buildHtml(table: HTMLTableElement): string {
+        table.removeClass("table-editor-table");
+        Array.from(table.rows).forEach((tr) => {
+            Array.from(tr.cells).forEach((td) => {
+                td.classList.remove("selected-cell");
+                td.removeAttribute("contenteditable");
             });
-
-            return `<tr>${cells.join("")}</tr>`;
         });
 
-        return `<table>${htmlRows.join("")}</table>`;
+        return table.outerHTML;
     }
 
     onClose() {
