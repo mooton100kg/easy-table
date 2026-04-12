@@ -10,6 +10,7 @@ export class TableEditorController {
 
     // ================== table state management
     setActiveCell(el: HTMLTableCellElement) {
+        this.activeCell?.classList.remove("selected-cell");
         this.activeCell = el;
         this.anchorCell = el;
     }
@@ -74,6 +75,18 @@ export class TableEditorController {
         }
     }
 
+    getColumnCount(row: HTMLTableRowElement): number {
+        let count = 0;
+
+        Array.from(row.children).forEach((cell) => {
+            const td = cell as HTMLTableCellElement;
+            count += td.colSpan || 1;
+        });
+
+        return count;
+    }
+
+
     // ================== table manipulation
     // prevent enter key from creating new <div>
     handleEnterKey(td: HTMLTableCellElement) {
@@ -87,7 +100,8 @@ export class TableEditorController {
 
     // bind click event to each cell
     bindCell(td: HTMLTableCellElement) {
-        td.addEventListener("click", (e) => {
+        td.addEventListener("mousedown", (e) => {
+            e.preventDefault();
             if (e.shiftKey && this.anchorCell) {
                 // select the rectangle between anchorCell and current cell
                 this.selectRectangle(this.anchorCell, td);
@@ -156,9 +170,10 @@ export class TableEditorController {
         const newRow = document.createElement("tr");
 
         const cells = Array.from(row.children);
+        const colCount = this.getColumnCount(row);
 
         // create new cell inside newRow
-        cells.forEach(() => {
+        for (let i = 0; i < colCount; i++) {
             const td = document.createElement("td");
 
             td.contentEditable = "true";
@@ -166,11 +181,12 @@ export class TableEditorController {
             this.bindCell(td);
 
             newRow.appendChild(td);
-        });
+        }
 
         if (type === "add") {
             table.appendChild(newRow);
         }
+
         else if (type === "insert") {
             row.parentNode?.insertBefore(
                 newRow,
@@ -219,6 +235,44 @@ export class TableEditorController {
         const cells = Array.from(this.selectedCells);
         if (cells.length < 2) return;
 
-        const baseCell = cells[0];
+        const first = cells[0];
+        if (!first) return;
+
+        // combine content
+        let mergedContent = "";
+        cells.forEach((cell) => {
+            mergedContent += cell.innerHTML + "<br>";
+        });
+        first.innerHTML = mergedContent;
+
+        // merge the rectangle
+        const rows = cells.map((cell) => cell.closest("tr")!);
+
+        const rowIndices = rows.map((row) =>
+            Array.from(row.parentElement!.children).indexOf(row)
+        );
+
+        const colIndices = cells.map((cell) =>
+            Array.from(cell.parentElement!.children).indexOf(cell)
+        );
+
+        const minRow = Math.min(...rowIndices);
+        const maxRow = Math.max(...rowIndices);
+        const minCol = Math.min(...colIndices);
+        const maxCol = Math.max(...colIndices);
+
+        first.rowSpan = maxRow - minRow + 1;
+        first.colSpan = maxCol - minCol + 1;
+
+        // remove the merged cells except the first one
+        cells.forEach((cell) => {
+            if (cell !== first) {
+                cell.remove();
+            }
+        });
+
+        this.clearSelectedCells();
+        this.setActiveCell(first);
+        first.classList.add("selected-cell");
     }
 }
