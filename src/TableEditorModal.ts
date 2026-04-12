@@ -26,7 +26,6 @@ export class TableEditorModal extends Modal {
         // ======================= create class input
         const classInput = contentEl.createEl("input", {});
 
-
         // ======================= create UI table
         // Convert html string to DOM
         const parser = new DOMParser();
@@ -39,6 +38,9 @@ export class TableEditorModal extends Modal {
             contentEl.createEl("p", { text: "Invalid table" });
             return;
         }
+
+        // set class input value
+        classInput.value = table.className;
 
         // function to pass activeCell to toolbar.ts
         function setActiveCell(el: HTMLElement) {
@@ -87,11 +89,14 @@ export class TableEditorModal extends Modal {
         const saveBtn = contentEl.createEl("button", { text: "Save" });
 
         saveBtn.onclick = () => {
-            const updatedHtml = this.buildHtml(table);
             const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 
+            const tableClass = classInput.value.split(" ");
+            const updatedHtml = this.buildHtml(table, tableClass);
+
             if (!view) return;
-            view.editor.replaceSelection(table.outerHTML);
+            console.log("update Class: ", tableClass);
+            view.editor.replaceSelection(updatedHtml);
             this.close();
 
         };
@@ -99,8 +104,10 @@ export class TableEditorModal extends Modal {
     }
 
     //Convert table back to normal table
-    buildHtml(table: HTMLTableElement): string {
+    buildHtml(table: HTMLTableElement, tableClass: string[]): string {
         table.removeClass("table-editor-table");
+        table.className = tableClass.join(" ");
+
         Array.from(table.rows).forEach((tr) => {
             Array.from(tr.cells).forEach((td) => {
                 td.classList.remove("selected-cell");
