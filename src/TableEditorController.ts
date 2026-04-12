@@ -1,3 +1,5 @@
+import { Notice } from "obsidian";
+
 export class TableEditorController {
     table: HTMLTableElement | null = null;
     activeCell: HTMLElement | null = null;
@@ -13,42 +15,6 @@ export class TableEditorController {
         this.activeCell?.classList.remove("selected-cell");
         this.activeCell = el;
         this.anchorCell = el;
-    }
-
-    // select rectangle of cells between two cells
-    selectRectangle(start: HTMLTableCellElement, end: HTMLTableCellElement) {
-        this.clearSelectedCells();
-
-        const startRow = start.closest("tr");
-        const endRow = end.closest("tr");
-        const table = this.table;
-        if (!startRow || !endRow || !table) return;
-
-        const rows = Array.from(table.rows);
-
-        const rowStartIndex = rows.indexOf(startRow);
-        const rowEndIndex = rows.indexOf(endRow);
-
-        const topRow = Math.min(rowStartIndex, rowEndIndex);
-        const bottomRow = Math.max(rowStartIndex, rowEndIndex);
-
-        const colStartIndex = Array.from(startRow.children).indexOf(start);
-        const colEndIndex = Array.from(endRow.children).indexOf(end);
-
-        const leftCol = Math.min(colStartIndex, colEndIndex);
-        const rightCol = Math.max(colStartIndex, colEndIndex);
-
-        for (let r = topRow; r <= bottomRow; r++) {
-            const row = rows[r];
-            if (!row) continue;
-            const cells = Array.from(row.children);
-
-            for (let c = leftCol; c <= rightCol; c++) {
-                const cell = cells[c] as HTMLTableCellElement;
-                cell.classList.add("selected-cell");
-                this.selectedCells.add(cell);
-            }
-        }
     }
 
     clearSelectedCells() {
@@ -127,6 +93,34 @@ export class TableEditorController {
             }
         }
         return null;
+    }
+
+    // select rectangle of cells between two cells
+    selectRectangle(start: HTMLTableCellElement, end: HTMLTableCellElement) {
+        this.clearSelectedCells();
+
+        const grid = this.getGrid(this.table!);
+        const startPos = this.getCellPosition(start, grid);
+        const endPos = this.getCellPosition(end, grid);
+        if (!startPos || !endPos) return;
+
+        const top = Math.min(startPos.topRow, endPos.topRow);
+        const bottom = Math.max(startPos.bottomRow, endPos.bottomRow);
+        const left = Math.min(startPos.topCol, endPos.topCol);
+        const right = Math.max(startPos.bottomCol, endPos.bottomCol);
+
+        for (let r = top; r <= bottom; r++) {
+            for (let c = left; c <= right; c++) {
+                const cell = grid[r]![c]!;
+                if (cell.colSpan > 1 || cell.rowSpan > 1) {
+                    new Notice("Selection overlaps merge cell");
+                    return;
+                }
+
+                cell.classList.add("selected-cell");
+                this.selectedCells.add(cell);
+            }
+        }
     }
 
     // ================== table manipulation
