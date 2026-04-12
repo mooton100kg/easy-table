@@ -59,7 +59,7 @@ export class TableEditorController {
     }
 
     getContext() {
-        const cell = this.activeCell;
+        const cell = this.activeCell as HTMLTableCellElement;
         if (!cell) return null;
 
         const row = cell.closest("tr");
@@ -75,17 +75,59 @@ export class TableEditorController {
         }
     }
 
-    getColumnCount(row: HTMLTableRowElement): number {
-        let count = 0;
+    // convert html table to 2d grid of cells -> grid[row][col]
+    getGrid(table: HTMLTableElement): HTMLTableCellElement[][] {
+        const grid: HTMLTableCellElement[][] = [];
+        const rows = Array.from(table.rows);
 
-        Array.from(row.children).forEach((cell) => {
-            const td = cell as HTMLTableCellElement;
-            count += td.colSpan || 1;
+        rows.forEach((row, r) => {
+            // check if row exists in grid, if not create it
+            const currentRow = grid[r] ?? (grid[r] = []);
+
+            let col = 0;
+
+            Array.from(row.cells).forEach((cell) => {
+                // skip occupied cells by rowspan and colspan
+                while (currentRow[col]) col++;
+
+                const rowSpan = cell.rowSpan || 1;
+                const colSpan = cell.colSpan || 1;
+
+                // fill grid
+                for (let i = 0; i < rowSpan; i++) {
+                    const targetRow = grid[r + i] ?? (grid[r + i] = []);
+                    for (let j = 0; j < colSpan; j++) {
+                        targetRow[col + j] = cell;
+                    }
+                }
+
+                col += colSpan;
+            });
         });
 
-        return count;
+        return grid;
     }
 
+    getCellPosition(
+        target: HTMLTableCellElement,
+        grid: HTMLTableCellElement[][]
+    ): { topRow: number; topCol: number; bottomRow: number; bottomCol: number } | null {
+        for (let r = 0; r < grid.length; r++) {
+            const currentRow = grid[r];
+            if (!currentRow) continue;
+            for (let c = 0; c < currentRow.length; c++) {
+                if (currentRow[c] === target) {
+                    return {
+                        topRow: r,
+                        topCol: c,
+                        bottomRow: r + (target.rowSpan || 1) - 1,
+                        bottomCol: c + (target.colSpan || 1) - 1
+                    };
+                }
+            }
+        }
+        return null;
+    }
 
     // ================== table manipulation
     // prevent enter key from creating new <div>
@@ -101,7 +143,6 @@ export class TableEditorController {
     // bind click event to each cell
     bindCell(td: HTMLTableCellElement) {
         td.addEventListener("mousedown", (e) => {
-            e.preventDefault();
             if (e.shiftKey && this.anchorCell) {
                 // select the rectangle between anchorCell and current cell
                 this.selectRectangle(this.anchorCell, td);
@@ -138,41 +179,94 @@ export class TableEditorController {
         const { cell, row, table } = ctx;
 
         // find index of current cell
-        const colIndex = Array.from(row.children).indexOf(cell);
+        const grid = this.getGrid(table);
+        // [a] [a] {b} [c]
+        // [d] [d] [e] [e]
+        // [f] [f] [f] [g]
+        const pos = this.getCellPosition(cell as HTMLTableCellElement, grid);
+        if (!pos) return;
 
-        // insert new cell in every row
-        const rows = Array.from(table.querySelectorAll("tr"));
+        // targetCol = 2
+        let targetCol = pos.topCol;
+        // check if cell colSpan is the last cell in the col
+        // true -> add new cell to the end of the col
+        if (pos.bottomCol >= grid[0]!.length - 1) { type = "add"; }
+        // if current cell has colspan -> add new col to the end of the colspan
+        else if (cell.colSpan > 1) { targetCol = pos.bottomCol; }
 
-        rows.forEach((row) => {
+        for (let r = 0; r < grid.length; r++) {
             const newTd = document.createElement("td");
 
             newTd.contentEditable = "true";
             newTd.classList.add("table-editor-cell");
             this.bindCell(newTd);
 
-            const cells = Array.from(row.children);
-            // insert col
             if (type === "insert") {
-                row.insertAfter(newTd, cells[colIndex] ?? null)
+                // row 1 : [d] [d] {e} [e]
+                // row 2 : [f] [f] {f} [g]
+                const referenceCell = grid[r]![targetCol]!;
+                // row 1 : [d] [d] [e] {e} -> refPos.bottomCol = 3
+                // row 2 : [f] [f] {f} [g] -> refPos.bottomCol = 2
+                const refPos = this.getCellPosition(referenceCell, grid);
+
+                // case 1 : refCell inside colSpan -> expand colspan
+                if (refPos && refPos.bottomCol > targetCol) {
+                    referenceCell.colSpan += 1;
+                }
+                // case 2 : refCell outside colSpan -> insert new cell
+                else {
+                    table.rows[r]!.insertAfter(newTd, referenceCell);
+                }
             }
             else if (type === "add") {
-                row.appendChild(newTd)
+                table.rows[r]!.appendChild(newTd);
             }
-        })
+        }
     }
 
     // add row function
     addRow(type: "insert" | "add") {
         const ctx = this.getContext();
         if (!ctx) return;
-        const { row, table } = ctx;
+        const { cell, row, table } = ctx;
+
+        // find index of current cell
+        const grid = this.getGrid(table);
+        // [a] [d] [e]
+        // {b} [d] [e]
+        // [c] [d] [f]
+        const pos = this.getCellPosition(cell as HTMLTableCellElement, grid);
+        if (!pos) return;
+
+        let targetRow = pos.topRow;
+        // check if cell rowSpan is the last cell in the row
+        // true -> add new cell to the end of the row
+        if (pos.bottomRow == grid.length - 1) { type = "add"; }
+        // if current cell has rowspan -> add new row to the end of the rowspan
+        else if (cell.rowSpan > 1) { targetRow = pos.bottomRow; }
+
+        let colCount = grid[0]!.length;
+
+        if (type === "insert") {
+            // check if there any col that have rowspan
+            for (let c = 0; c < grid[0]!.length; c++) {
+                // [a] [d] [e]
+                // {b} {d} {e}
+                // [c] [d] [f]
+                const referenceCell = grid[targetRow]![c]!;
+                const refPos = this.getCellPosition(referenceCell, grid);
+
+                // if refCell inside rowSpan -> expand rowspan
+                if (refPos && refPos.bottomRow > targetRow) {
+                    referenceCell.rowSpan += 1;
+                    colCount -= 1;
+                }
+            }
+        }
 
         const newRow = document.createElement("tr");
 
-        const cells = Array.from(row.children);
-        const colCount = this.getColumnCount(row);
-
-        // create new cell inside newRow
+        // create new cell = col count of next row
         for (let i = 0; i < colCount; i++) {
             const td = document.createElement("td");
 
@@ -188,10 +282,7 @@ export class TableEditorController {
         }
 
         else if (type === "insert") {
-            row.parentNode?.insertBefore(
-                newRow,
-                row.nextSibling
-            );
+            row.parentNode?.insertAfter(newRow, table.rows[targetRow]!);
         }
     }
 
