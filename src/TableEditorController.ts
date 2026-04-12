@@ -1,15 +1,53 @@
 export class TableEditorController {
+    table: HTMLTableElement | null = null;
     activeCell: HTMLElement | null = null;
     selectedCells: Set<HTMLTableCellElement> = new Set();
+    anchorCell: HTMLTableCellElement | null = null;
 
-    // ================== table state management
-    setActiveCell(el: HTMLElement) {
-        this.activeCell = el;
+    constructor(table: HTMLTableElement) {
+        this.table = table;
     }
 
-    addSelectedCell(el: HTMLTableCellElement) {
-        this.selectedCells.add(el);
-        el.classList.add("selected-cell");
+    // ================== table state management
+    setActiveCell(el: HTMLTableCellElement) {
+        this.activeCell = el;
+        this.anchorCell = el;
+    }
+
+    // select rectangle of cells between two cells
+    selectRectangle(start: HTMLTableCellElement, end: HTMLTableCellElement) {
+        this.clearSelectedCells();
+
+        const startRow = start.closest("tr");
+        const endRow = end.closest("tr");
+        const table = this.table;
+        if (!startRow || !endRow || !table) return;
+
+        const rows = Array.from(table.rows);
+
+        const rowStartIndex = rows.indexOf(startRow);
+        const rowEndIndex = rows.indexOf(endRow);
+
+        const topRow = Math.min(rowStartIndex, rowEndIndex);
+        const bottomRow = Math.max(rowStartIndex, rowEndIndex);
+
+        const colStartIndex = Array.from(startRow.children).indexOf(start);
+        const colEndIndex = Array.from(endRow.children).indexOf(end);
+
+        const leftCol = Math.min(colStartIndex, colEndIndex);
+        const rightCol = Math.max(colStartIndex, colEndIndex);
+
+        for (let r = topRow; r <= bottomRow; r++) {
+            const row = rows[r];
+            if (!row) continue;
+            const cells = Array.from(row.children);
+
+            for (let c = leftCol; c <= rightCol; c++) {
+                const cell = cells[c] as HTMLTableCellElement;
+                cell.classList.add("selected-cell");
+                this.selectedCells.add(cell);
+            }
+        }
     }
 
     clearSelectedCells() {
@@ -26,7 +64,7 @@ export class TableEditorController {
         const row = cell.closest("tr");
         if (!row) return null;
 
-        const table = row.closest("table");
+        const table = this.table
         if (!table) return null;
 
         return {
@@ -50,15 +88,15 @@ export class TableEditorController {
     // bind click event to each cell
     bindCell(td: HTMLTableCellElement) {
         td.addEventListener("click", (e) => {
-            if (e.shiftKey) {
-                // select mode
-                this.addSelectedCell(td);
+            if (e.shiftKey && this.anchorCell) {
+                // select the rectangle between anchorCell and current cell
+                this.selectRectangle(this.anchorCell, td);
             }
             else {
                 // reset selection when click without shift
                 this.clearSelectedCells();
-                this.addSelectedCell(td);
                 this.setActiveCell(td);
+                td.classList.add("selected-cell");
             }
         });
     }
@@ -177,7 +215,10 @@ export class TableEditorController {
     }
 
     // merge cell function
-    mergeCell() {
-        const cells = Array.from(this.select)
+    mergeCells() {
+        const cells = Array.from(this.selectedCells);
+        if (cells.length < 2) return;
+
+        const baseCell = cells[0];
     }
 }

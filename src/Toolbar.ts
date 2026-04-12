@@ -46,7 +46,7 @@ export class TableToolbar {
 
         // cell
         this.createButton(groupCell, "table-cells-merge", "Merge Cell", () => {
-            this.controller.mergeCell();
+            this.controller.mergeCells();
         });
 
         this.createButton(groupCell, "chevrons-down", "Add Row Below", () => {

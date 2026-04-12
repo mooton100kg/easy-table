@@ -12,8 +12,6 @@ export class TableEditorModal extends Modal {
     }
 
     onOpen() {
-        const controller = new TableEditorController();
-
         const { contentEl } = this;
         contentEl.empty();
 
@@ -22,7 +20,6 @@ export class TableEditorModal extends Modal {
 
         // ======================= create toolbar
         const toolbarEl = contentEl.createDiv();
-        new TableToolbar(toolbarEl, controller);
 
         // ======================= create class input
         const classInput = contentEl.createEl("input", {});
@@ -43,6 +40,10 @@ export class TableEditorModal extends Modal {
         // set class input value
         classInput.value = table.className;
         table.addClass("table-editor-table");
+
+        // create controller
+        const controller = new TableEditorController(table);
+        new TableToolbar(toolbarEl, controller);
 
         Array.from(table.rows).forEach((tr) => {
             Array.from(tr.cells).forEach((td) => {
