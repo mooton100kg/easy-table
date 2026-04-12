@@ -325,9 +325,17 @@ export class TableEditorController {
 
         // combine content
         let mergedContent = "";
-        cells.forEach((cell) => {
-            mergedContent += cell.innerHTML + "<br>";
-        });
+
+        for (let i = 0; i < cells.length; i++) {
+            const content = cells[i]!.innerHTML.trim();
+            mergedContent += content;
+
+            // add <br> if content is not empty and it's not the last cell
+            if (content && i < cells.length - 1) {
+                mergedContent += "<br>"
+            };
+        }
+
         first.innerHTML = mergedContent;
 
         // merge the rectangle
@@ -359,5 +367,42 @@ export class TableEditorController {
         this.clearSelectedCells();
         this.setActiveCell(first);
         first.classList.add("selected-cell");
+    }
+
+    unmergeCells() {
+        const ctx = this.getContext();
+        if (!ctx) return;
+        const { cell, row, table } = ctx;
+
+        const grid = this.getGrid(table);
+        const pos = this.getCellPosition(cell, grid);
+        if (!pos) return;
+
+        const rowSpan = cell.rowSpan || 1;
+        const colSpan = cell.colSpan || 1;
+
+        if (rowSpan === 1 && colSpan === 1) return;
+
+        cell.rowSpan = 1;
+        cell.colSpan = 1;
+
+        for (let r = 0; r < rowSpan; r++) {
+            for (let c = 0; c < colSpan; c++) {
+
+                // skip original cell
+                if (r === 0 && c === 0) continue;
+
+                const tr = table.rows[pos.topRow + r];
+
+                const td = document.createElement("td");
+                td.contentEditable = "true";
+                td.classList.add("table-editor-cell");
+                this.bindCell(td);
+
+                // insert new cell to the correct position
+                const edgeCell = grid[pos.topRow + r]![pos.topCol + colSpan] || null;
+                tr?.insertBefore(td, edgeCell);
+            }
+        }
     }
 }

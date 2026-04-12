@@ -45,8 +45,12 @@ export class TableToolbar {
         });
 
         // cell
-        this.createButton(groupCell, "table-cells-merge", "Merge Cell", () => {
+        this.createButton(groupCell, "link-2", "Merge Cell", () => {
             this.controller.mergeCells();
+        });
+
+        this.createButton(groupCell, "link-2-off", "Unmerge Cell", () => {
+            this.controller.unmergeCells();
         });
 
         this.createButton(groupCell, "chevrons-down", "Add Row Below", () => {
