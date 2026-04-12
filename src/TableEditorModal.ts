@@ -1,5 +1,7 @@
 import { App, Editor, MarkdownView, Modal, setIcon } from 'obsidian';
+
 import { TableToolbar } from "./Toolbar";
+import { TableEditorController } from "./TableEditorController";
 
 export class TableEditorModal extends Modal {
     html: string;
@@ -10,8 +12,7 @@ export class TableEditorModal extends Modal {
     }
 
     onOpen() {
-        let activeCell: HTMLElement | null = null;
-        let selectedCells: Set<HTMLTableCellElement> = new Set();
+        const controller = new TableEditorController();
 
         const { contentEl } = this;
         contentEl.empty();
@@ -21,7 +22,7 @@ export class TableEditorModal extends Modal {
 
         // ======================= create toolbar
         const toolbarEl = contentEl.createDiv();
-        new TableToolbar(toolbarEl, () => activeCell, setActiveCell);
+        new TableToolbar(toolbarEl, controller);
 
         // ======================= create class input
         const classInput = contentEl.createEl("input", {});
@@ -41,46 +42,14 @@ export class TableEditorModal extends Modal {
 
         // set class input value
         classInput.value = table.className;
-
-        // function to pass activeCell to toolbar.ts
-        function setActiveCell(el: HTMLElement) {
-            activeCell = el;
-        }
-
         table.addClass("table-editor-table");
 
         Array.from(table.rows).forEach((tr) => {
             Array.from(tr.cells).forEach((td) => {
                 td.contentEditable = "true";
 
-                // prevent enter key from creating new <div>
-                td.addEventListener("keydown", (e) => {
-                    if (e.key === "Enter") {
-                        e.preventDefault();
-                        document.execCommand("insertLineBreak");
-                    }
-                });
-
-                // Detect active cell
-                td.addEventListener("focus", () => {
-                    activeCell = td;
-                });
-
-                // Detect selected cells
-                td.addEventListener("click", (e) => {
-                    if (e.shiftKey) {
-                        // select mode
-                        selectedCells.add(td);
-                        td.classList.add("selected-cell");
-                    }
-                    else {
-                        // reset selection when click without shift
-                        selectedCells.forEach((cell) => cell.classList.remove("selected-cell"));
-                        selectedCells.clear();
-                        selectedCells.add(td);
-                        td.classList.add("selected-cell");
-                    }
-                });
+                controller.handleEnterKey(td);
+                controller.bindCell(td);
             });
         });
         contentEl.appendChild(table);
@@ -92,7 +61,7 @@ export class TableEditorModal extends Modal {
             const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 
             const tableClass = classInput.value.split(" ");
-            const updatedHtml = this.buildHtml(table, tableClass);
+            const updatedHtml = controller.buildHtml(table, tableClass);
 
             if (!view) return;
             console.log("update Class: ", tableClass);
@@ -101,21 +70,6 @@ export class TableEditorModal extends Modal {
 
         };
 
-    }
-
-    //Convert table back to normal table
-    buildHtml(table: HTMLTableElement, tableClass: string[]): string {
-        table.removeClass("table-editor-table");
-        table.className = tableClass.join(" ");
-
-        Array.from(table.rows).forEach((tr) => {
-            Array.from(tr.cells).forEach((td) => {
-                td.classList.remove("selected-cell");
-                td.removeAttribute("contenteditable");
-            });
-        });
-
-        return table.outerHTML;
     }
 
     onClose() {
