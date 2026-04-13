@@ -109,18 +109,38 @@ export class TableEditorController {
         const left = Math.min(startPos.topCol, endPos.topCol);
         const right = Math.max(startPos.bottomCol, endPos.bottomCol);
 
+        let mergeCells: Set<HTMLTableCellElement> = new Set()
         for (let r = top; r <= bottom; r++) {
             for (let c = left; c <= right; c++) {
                 const cell = grid[r]![c]!;
-                if (cell.colSpan > 1 || cell.rowSpan > 1) {
-                    new Notice("Selection overlaps merge cell");
-                    return;
+
+                // detect overlaps with merge cell
+                if ((cell.colSpan > 1 || cell.rowSpan > 1)) {
+                    mergeCells.add(cell);
                 }
 
-                cell.classList.add("selected-cell");
                 this.selectedCells.add(cell);
             }
         }
+
+        // check if all rect overlaps with merge cell
+        mergeCells.forEach((cell) => {
+            const pos = this.getCellPosition(cell, grid);
+            if (!pos) return;
+
+            if (pos.topRow < top ||
+                pos.topCol < left ||
+                pos.bottomRow > bottom ||
+                pos.bottomCol > right
+            ) {
+                new Notice("Merge cell outside of selection");
+                this.clearSelectedCells();
+                this.setActiveCell(start);
+                start.classList.add("selected-cell");
+                return;
+            }
+        });
+        this.selectedCells.forEach((cell) => { cell.classList.add("selected-cell") })
     }
 
     // ================== table manipulation
@@ -464,21 +484,41 @@ export class TableEditorController {
         cell.rowSpan = 1;
         cell.colSpan = 1;
 
+        // create new cell in blank space
         for (let r = 0; r < rowSpan; r++) {
             for (let c = 0; c < colSpan; c++) {
 
                 // skip original cell
                 if (r === 0 && c === 0) continue;
 
+                // get tr from existing table
                 const tr = table.rows[pos.topRow + r];
 
-                const td = document.createElement("td");
-                td.contentEditable = "true";
-                this.bindCell(td);
+
+                // get cell position
+                const rowPos = pos.topRow + r;
+                const colPos = pos.topCol + c;
+
+                // catch if cell position is in header area
+                let tagName = "td";
+                let scope: "col" | "row" = "col";
+                if (rowPos == 0 && this.table?.classList.contains("top-header")) {
+                    tagName = "th"
+                    scope = "col"
+                }
+                else if (colPos == 0 && this.table?.classList.contains("side-header")) {
+                    tagName = "th"
+                    scope = "row"
+                }
+
+                const el = document.createElement(tagName) as HTMLTableCellElement;
+                el.contentEditable = "true";
+                this.bindCell(el);
+                if (tagName === "th") { this.toggleScope(el, rowPos, colPos, scope) }
 
                 // insert new cell to the correct position
                 const edgeCell = grid[pos.topRow + r]![pos.topCol + colSpan] || null;
-                tr?.insertBefore(td, edgeCell);
+                tr?.insertBefore(el, edgeCell);
             }
         }
     }
