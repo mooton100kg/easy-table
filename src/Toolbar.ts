@@ -21,11 +21,25 @@ export class TableToolbar {
         this.container.addClass("table-editor-toolbar");
 
         // ============== Groups
+        const groupTable = this.container.createDiv("toolbar-group table");
         const groupFormat = this.container.createDiv("toolbar-group format");
         const groupList = this.container.createDiv("toolbar-group list");
         const groupCell = this.container.createDiv("toolbar-group cell");
 
         // ============== Button
+        this.createButton(groupTable, "bug", "debug", () => {
+            console.log("focus: ", this.controller.activeCell);
+        });
+
+        // table
+        this.createButton(groupTable, Icons.topTable, "Set Top Header", () => {
+            this.controller.setTopHeader();
+        });
+
+        this.createButton(groupTable, Icons.sideTable, "Set Side Header", () => {
+            this.controller.setSideHeader();
+        });
+
         // format
         this.createButton(groupFormat, "bold", "Bold", () => {
             document.execCommand("bold");

@@ -21,9 +21,6 @@ export class TableEditorModal extends Modal {
         // ======================= create toolbar
         const toolbarEl = contentEl.createDiv();
 
-        // ======================= create class input
-        const classInput = contentEl.createEl("input", {});
-
         // ======================= create UI table
         // Convert html string to DOM
         const parser = new DOMParser();
@@ -37,8 +34,6 @@ export class TableEditorModal extends Modal {
             return;
         }
 
-        // set class input value
-        classInput.value = table.className;
         table.addClass("table-editor-table");
 
         // create controller
@@ -61,11 +56,9 @@ export class TableEditorModal extends Modal {
         saveBtn.onclick = () => {
             const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 
-            const tableClass = classInput.value.split(" ");
-            const updatedHtml = controller.buildHtml(table, tableClass);
+            const updatedHtml = controller.buildHtml(table);
 
             if (!view) return;
-            console.log("update Class: ", tableClass);
             view.editor.replaceSelection(updatedHtml);
             this.close();
 

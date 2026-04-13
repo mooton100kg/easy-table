@@ -1,3 +1,20 @@
+/* =================== global style =================== */
+.top-header th {
+    background-color: #264653;
+    color: white;
+    border: 1px solid white;
+    font-weight: bold;
+}
+
+.side-header td:first-child,
+.side-header th:first-child {
+    background-color: #4e8a99;
+    color: white;
+    border: 1px solid white;
+    font-weight: bold;
+    text-align: left;
+}
+
 /* =================== Modal style =================== */
 
 /* UI background */

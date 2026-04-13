@@ -151,9 +151,8 @@ export class TableEditorController {
     }
 
     //Convert table back to normal table
-    buildHtml(table: HTMLTableElement, tableClass: string[]): string {
+    buildHtml(table: HTMLTableElement): string {
         table.removeClass("table-editor-table");
-        table.className = tableClass.join(" ");
 
         Array.from(table.rows).forEach((tr) => {
             Array.from(tr.cells).forEach((td) => {
@@ -163,6 +162,87 @@ export class TableEditorController {
         });
 
         return table.outerHTML;
+    }
+
+    // Convert between td and th
+    tdOrTh(cell: HTMLTableCellElement): HTMLTableCellElement {
+
+        let tag: string;
+        if (cell.tagName === "TD") { tag = "th"; }
+        else { tag = "td"; }
+
+        const newCell = document.createElement(tag) as HTMLTableCellElement;
+
+        // copy content
+        newCell.innerHTML = cell.innerHTML;
+
+        // copy attributes
+        Array.from(cell.attributes).forEach((attr) => {
+            newCell.setAttribute(attr.name, attr.value);
+        });
+
+        // bind cell
+        this.bindCell(newCell);
+
+        // tranfer activeCell/anchorCell
+        if (this.activeCell === cell) {
+            this.setActiveCell(newCell);
+        }
+
+        cell.replaceWith(newCell);
+
+        return newCell;
+    }
+
+    //toggle scope attr
+    toggleScope(cell: HTMLTableCellElement, r: number, c: number, scope: "row" | "col") {
+        // catch topleft cell
+        if (r === 0 && c === 0) {
+            cell.removeAttribute("scope");
+
+            const top = this.table?.classList.contains("top-header");
+            const side = this.table?.classList.contains("side-header");
+
+            if (top && side) cell.setAttribute("scope", "corner");
+            else if (top) cell.setAttribute("scope", "col");
+            else if (side) cell.setAttribute("scope", "row");
+            return;
+        }
+
+        if (cell.getAttribute("scope") === scope) cell.removeAttribute("scope");
+        else cell.setAttribute("scope", scope);
+    }
+
+    // set table header
+    setTopHeader() {
+        this.table?.classList.toggle("top-header");
+        const grid = this.getGrid(this.table!);
+
+        for (let c = 0; c < grid[0]!.length; c++) {
+            const cell = grid[0]![c]!;
+            this.toggleScope(cell, 0, c, "col");
+
+            // skip topleft cell if side-header is enabled
+            if (this.table?.classList.contains("side-header") && c === 0) {
+                continue;
+            }
+
+            this.tdOrTh(cell);
+        }
+    }
+    setSideHeader() {
+        this.table?.classList.toggle("side-header");
+        const grid = this.getGrid(this.table!);
+
+        for (let r = 0; r < grid.length; r++) {
+            const cell = grid[r]![0]!;
+            this.toggleScope(cell, r, 0, "row");
+
+            // skip topleft cell if top-header is enabled
+            if (this.table?.classList.contains("top-header") && r === 0) continue;
+
+            this.tdOrTh(cell);
+        }
     }
 
     // ================== btn logic
@@ -192,7 +272,6 @@ export class TableEditorController {
             const newTd = document.createElement("td");
 
             newTd.contentEditable = "true";
-            newTd.classList.add("table-editor-cell");
             this.bindCell(newTd);
 
             if (type === "insert") {
@@ -265,7 +344,6 @@ export class TableEditorController {
             const td = document.createElement("td");
 
             td.contentEditable = "true";
-            td.classList.add("table-editor-cell");
             this.bindCell(td);
 
             newRow.appendChild(td);
@@ -396,7 +474,6 @@ export class TableEditorController {
 
                 const td = document.createElement("td");
                 td.contentEditable = "true";
-                td.classList.add("table-editor-cell");
                 this.bindCell(td);
 
                 // insert new cell to the correct position
