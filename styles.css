@@ -1,15 +1,35 @@
+:root {
+    --header-top: #264653;
+    --header-side: #264653;
+    --header-corner: #3d405b;
+    --text: #3d405b;
+    --counter-text: white;
+}
+
 /* =================== global style =================== */
-.top-header th {
-    background-color: #264653;
-    color: white;
+td,
+th {
+    padding: 1em;
+}
+
+th[scope="col"] {
+    background-color: var(--header-top);
+    color: var(--counter-text);
     border: 1px solid white;
     font-weight: bold;
 }
 
-.side-header td:first-child,
-.side-header th:first-child {
-    background-color: #4e8a99;
-    color: white;
+th[scope="row"] {
+    background-color: var(--header-side);
+    color: var(--counter-text);
+    border: 1px solid white;
+    font-weight: bold;
+    text-align: left;
+}
+
+th[scope="corner"] {
+    background-color: var(--header-corner);
+    color: var(--counter-text);
     border: 1px solid white;
     font-weight: bold;
     text-align: left;

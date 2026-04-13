@@ -1,7 +1,7 @@
 # Feature
 
 - [x] add th
-- [ ] table orientation (side / top)
+- [x] table orientation (side / top)
 - [ ] able to merge with merged cell
 - [ ] cell alignment
 - [ ] font color
