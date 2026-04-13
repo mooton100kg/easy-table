@@ -21,9 +21,9 @@ export class TableToolbar {
         this.container.addClass("table-editor-toolbar");
 
         // ============== Groups
-        const groupFormat = this.container.createDiv("toolbar-group");
-        const groupList = this.container.createDiv("toolbar-group");
-        const groupCell = this.container.createDiv("toolbar-group");
+        const groupFormat = this.container.createDiv("toolbar-group format");
+        const groupList = this.container.createDiv("toolbar-group list");
+        const groupCell = this.container.createDiv("toolbar-group cell");
 
         // ============== Button
         // format
