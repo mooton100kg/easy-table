@@ -1,3 +1,5 @@
+- [x] add th
+- [ ] table orientation (side / top)
 - [ ] cell alignment
 - [ ] font color
 - [ ] font size

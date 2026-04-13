@@ -135,17 +135,17 @@ export class TableEditorController {
     }
 
     // bind click event to each cell
-    bindCell(td: HTMLTableCellElement) {
-        td.addEventListener("mousedown", (e) => {
+    bindCell(cell: HTMLTableCellElement) {
+        cell.addEventListener("mousedown", (e) => {
             if (e.shiftKey && this.anchorCell) {
                 // select the rectangle between anchorCell and current cell
-                this.selectRectangle(this.anchorCell, td);
+                this.selectRectangle(this.anchorCell, cell);
             }
             else {
                 // reset selection when click without shift
                 this.clearSelectedCells();
-                this.setActiveCell(td);
-                td.classList.add("selected-cell");
+                this.setActiveCell(cell);
+                cell.classList.add("selected-cell");
             }
         });
     }
