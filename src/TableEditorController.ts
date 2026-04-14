@@ -2,12 +2,16 @@ import { Notice } from "obsidian";
 
 export class TableEditorController {
     table: HTMLTableElement | null = null;
+    tableScale: number = 1;
+    tableContainer: HTMLElement | null = null;
     activeCell: HTMLElement | null = null;
     selectedCells: Set<HTMLTableCellElement> = new Set();
     anchorCell: HTMLTableCellElement | null = null;
 
-    constructor(table: HTMLTableElement) {
+    constructor(table: HTMLTableElement, tableContainer: HTMLElement) {
         this.table = table;
+        this.tableScale = getScale(table);
+        this.tableContainer = tableContainer;
     }
 
     // ================== table state management
@@ -267,6 +271,39 @@ export class TableEditorController {
 
             this.tdOrTh(cell);
         }
+    }
+
+    /**
+     * Resize table
+     * @param step - positive → scale up, negative → scale down, unit = %
+     * @param fit - true → fit to screen
+     */
+    resizeTable(step?: number, size?: number, fit?: boolean) {
+        if (!this.table) return;
+
+        let newScale = this.tableScale;
+
+        if (step) {
+            newScale += step / 100;
+            if (newScale < 0) newScale = 0
+        }
+        else if (size) {
+            newScale = size
+        }
+        else if (fit) {
+            // reset to measure real size
+            this.table.style.transform = "scale(1)";
+
+            const tableWidth = this.table.scrollWidth;
+            const containerWidth = this.tableContainer!.clientWidth;
+
+            newScale = containerWidth / tableWidth;
+
+        }
+        this.table.style.transform = `scale(${newScale})`
+        this.table.style.transformOrigin = "top left";
+        this.tableScale = newScale;
+
     }
 
     // ================== btn logic
@@ -559,4 +596,16 @@ export class TableEditorController {
             }
         }
     }
+}
+
+function getScale(el: HTMLElement): number {
+    const transform = getComputedStyle(el).transform;
+
+    if (!transform || transform === "none") {
+        return 1;
+    }
+
+    const matrix = new DOMMatrix(transform);
+
+    return matrix.a;
 }

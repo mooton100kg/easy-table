@@ -32,6 +32,22 @@ export class TableToolbar {
         });
 
         // table
+        this.createDropdown(groupTable, "test", "", {
+            mode: "single",
+            itemsList: 50
+        }, generateItems(1, 100, "%")
+            , (value) => {
+                console.log(value);
+            })
+
+        this.createButton(groupTable, Icons.increaseSize, "Increase Table Size", () => {
+            this.controller.resizeTable(10)
+        }, false);
+
+        this.createButton(groupTable, Icons.decreaseSize, "Decrease Table Size", () => {
+            this.controller.resizeTable(-10)
+        }, false);
+
         this.createDropdown(groupTable, "Table class", "Set table class", {
             mode: "multi",
             itemsList: this.controller.table?.className.split(" ") || []
@@ -106,7 +122,8 @@ export class TableToolbar {
         parent: HTMLElement,
         icon: string,
         title: string,
-        action: () => void
+        action: () => void,
+        focus: boolean = true,
     ) {
         const btn = parent.createEl("button");
 
@@ -125,11 +142,14 @@ export class TableToolbar {
 
         // add onclick action
         btn.onclick = () => {
-            // check if there are any focused cell
-            const cell = this.controller.activeCell;
-            if (!cell) return;
+            if (!focus) {
+            }
+            else {
+                // check if there are any focused cell
+                const cell = this.controller.activeCell;
+                if (!cell) return;
+            }
 
-            cell.focus();
             action();
         }
     }
@@ -142,7 +162,7 @@ export class TableToolbar {
         config: MultiSelectConfig | SingleSelectConfig,
         items: {
             label: string;
-            value: string;
+            value: string | number;
         }[],
         action: (value: string) => void,
     ) {
@@ -159,7 +179,24 @@ export class TableToolbar {
         // open dropdown when click button
         btn.onclick = (e) => {
             e.stopPropagation();
-            menu.style.display = menu.style.display === "none" ? "block" : "none";
+
+            const isOpen = menu.style.display === "block";
+            // condition ? value_if_true : value_if_false
+            menu.style.display = isOpen ? "none" : "block";
+
+            if (!isOpen && config.mode === "single") {
+                // wait for DOM render
+                setTimeout(() => {
+                    const activeRow = rows.find(r => r.active);
+
+                    if (activeRow) {
+                        activeRow.row.scrollIntoView({
+                            block: "center",
+                            behavior: "auto"
+                        })
+                    }
+                }, 0);
+            }
         };
 
         // close dropdown when click outside
@@ -186,8 +223,12 @@ export class TableToolbar {
             let active = false;
             if (config.mode === "multi") {
                 // check if table already contain this class
-                active = config.itemsList.includes(item.value) ?? false;
+                active = config.itemsList.includes(item.value as string) ?? false;
             }
+            else if (config.mode === "single") {
+                active = config.itemsList === item.value
+            }
+
             check.style.visibility = active ? "visible" : "hidden";
 
             // row = item container
@@ -198,7 +239,7 @@ export class TableToolbar {
                 e.stopPropagation();
 
                 // do the action when click
-                action(item.value);
+                action(item.value as string);
 
                 // ======== single mode logic
                 if (config.mode === "single") {
@@ -229,5 +270,18 @@ type MultiSelectConfig = {
 
 type SingleSelectConfig = {
     mode: "single";
-    itemsList?: never;
+    itemsList: string | number;
+}
+
+function generateItems(start: number, end: number, unit: string): { label: string; value: string | number }[] {
+    const items = [];
+
+    for (let i = start; i <= end; i++) {
+        items.push({
+            label: `${i} ${unit}`,
+            value: i
+        });
+    }
+
+    return items;
 }

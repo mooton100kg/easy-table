@@ -8,6 +8,7 @@
 - [x] table class for decoration (spread)
 - [x] edit in custom tab
 - [ ] someway to resize the table
+- [ ] change dropdown to type input
 - [ ] cell alignment
 - [ ] font color
 - [ ] font size

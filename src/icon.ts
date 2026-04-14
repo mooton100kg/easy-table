@@ -13,5 +13,18 @@ export const Icons = {
             <rect width="20" height="20" x="2" y="2" rx="1" ry="1" />
             <rect width="20" height="6" x="2" y="2" rx="1" ry="1" />
             <rect width="6" height="20" x="2" y="2" rx="1" ry="1" fill="currentColor" fill-opacity="0.5"/>
-        </svg>`
+        </svg>`,
+    increaseSize: `
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke="currentColor">
+            <circle r="8" cx="11" cy="11" />
+            <line x1="17" y1="17" x2="21" y2="21" stroke-linecap="round" />
+            <line x1="7" y1="11" x2="15" y2="11" />
+            <line x1="11" y1="7" x2="11" y2="15" />
+        </svg>`,
+    decreaseSize: `
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke="currentColor">
+        <circle r="6" cx="11" cy="11" />
+        <line x1="16" y1="16" x2="19" y2="19" stroke-linecap="round" />
+        <line x1="7" y1="11" x2="15" y2="11" />
+    </svg>`
 }

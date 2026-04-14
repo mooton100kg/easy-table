@@ -66,7 +66,7 @@ export class TableEditorView extends ItemView {
         tableClone.addClass("table-editor-table");
 
         // create controller
-        const controller = new TableEditorController(tableClone);
+        const controller = new TableEditorController(tableClone, wrapper);
         new TableToolbar(toolbarEl, controller);
 
         Array.from(tableClone.rows).forEach((tr) => {
