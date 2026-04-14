@@ -62,12 +62,13 @@ export class TableEditorView extends ItemView {
 
         // clone the table
         const tableClone = table.cloneNode(true) as HTMLTableElement
-
         tableClone.addClass("table-editor-table");
+
+        // add clone inside contentEl
+        contentEl.appendChild(tableClone);
 
         // create controller
         const controller = new TableEditorController(tableClone, wrapper);
-        new TableToolbar(toolbarEl, controller);
 
         Array.from(tableClone.rows).forEach((tr) => {
             Array.from(tr.cells).forEach((td) => {
@@ -78,8 +79,8 @@ export class TableEditorView extends ItemView {
             });
         });
 
-        // add clone inside contentEl
-        contentEl.appendChild(tableClone);
+        // create toolbar
+        new TableToolbar(toolbarEl, controller);
 
         // ======================= create save button
         const saveBtn = contentEl.createEl("button", { text: "Save" });

@@ -29,12 +29,13 @@ export class TableToolbar {
         // ============== Button
         this.createButton(groupTable, "bug", "debug", () => {
             console.log("focus: ", this.controller.activeCell);
+            console.log(this.controller.tableScale);
         });
 
         // table
         this.createDropdown(groupTable, "test", "", {
             mode: "single",
-            itemsList: 50
+            itemsList: "50"
         }, generateItems(1, 100, "%")
             , (value) => {
                 console.log(value);
@@ -162,28 +163,58 @@ export class TableToolbar {
         config: MultiSelectConfig | SingleSelectConfig,
         items: {
             label: string;
-            value: string | number;
+            value: string;
         }[],
         action: (value: string) => void,
     ) {
         const wrapper = parent.createDiv("toolbar-dropdown");
 
         // create dropdown button
-        const btn = wrapper.createEl("button", { text: label + " ▾" });
-        btn.setAttribute("title", title);
+        const input = wrapper.createEl("input", {
+            type: "text",
+            placeholder: label
+        });
+        input.classList.add("dropdown-input")
+        if (config.mode === "single") input.value = config.itemsList;
+
+        // handle enter key
+        input.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                const value = input.value;
+
+                // find matching item
+                const match = items.find(item => item.value === value);
+
+                if (match) {
+                    action(match.value);
+                    input.value = match.value;
+                }
+
+                // update row
+                rows.forEach(r => {
+                    r.active = r.value === value;
+                    r.check.style.visibility = r.active ? "visible" : "hidden";
+                })
+            }
+        });
+
+        const arrow = wrapper.createEl("button");
+        setIcon(arrow, "chevron-down");
 
         // create dropdown item container 
         const menu = wrapper.createDiv("dropdown-menu");
         menu.style.display = "none";
 
         // open dropdown when click button
-        btn.onclick = (e) => {
+        arrow.onclick = (e) => {
             e.stopPropagation();
 
             const isOpen = menu.style.display === "block";
             // condition ? value_if_true : value_if_false
             menu.style.display = isOpen ? "none" : "block";
 
+            // auto scroll to current value
             if (!isOpen && config.mode === "single") {
                 // wait for DOM render
                 setTimeout(() => {
@@ -208,6 +239,7 @@ export class TableToolbar {
             row: HTMLElement;
             check: HTMLElement;
             active: boolean;
+            value: string;
         }[] = [];
 
         // create each item
@@ -223,7 +255,7 @@ export class TableToolbar {
             let active = false;
             if (config.mode === "multi") {
                 // check if table already contain this class
-                active = config.itemsList.includes(item.value as string) ?? false;
+                active = config.itemsList.includes(item.value) ?? false;
             }
             else if (config.mode === "single") {
                 active = config.itemsList === item.value
@@ -231,15 +263,17 @@ export class TableToolbar {
 
             check.style.visibility = active ? "visible" : "hidden";
 
+            const value = item.value
+
             // row = item container
             // check = checkmark el before label
-            rows.push({ row, check, active });
+            rows.push({ row, check, active, value });
 
             row.onclick = (e) => {
                 e.stopPropagation();
 
                 // do the action when click
-                action(item.value as string);
+                action(item.value);
 
                 // ======== single mode logic
                 if (config.mode === "single") {
@@ -251,6 +285,9 @@ export class TableToolbar {
 
                     // active the clicked row
                     active = true;
+
+                    // update the input
+                    input.value = item.value;
                 }
 
                 // ======== multi mode logic
@@ -270,16 +307,16 @@ type MultiSelectConfig = {
 
 type SingleSelectConfig = {
     mode: "single";
-    itemsList: string | number;
+    itemsList: string;
 }
 
-function generateItems(start: number, end: number, unit: string): { label: string; value: string | number }[] {
+function generateItems(start: number, end: number, unit: string): { label: string; value: string }[] {
     const items = [];
 
     for (let i = start; i <= end; i++) {
         items.push({
             label: `${i} ${unit}`,
-            value: i
+            value: `${i}`
         });
     }
 

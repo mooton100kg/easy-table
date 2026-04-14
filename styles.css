@@ -128,15 +128,33 @@ th[scope="corner"] {
 /* dropdown */
 .toolbar-dropdown {
     position: relative;
+    display: flex;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 6px;
+    padding: 2px 4px;
+    background: var(--background-primary);
 }
 
-.toolbar-dropdown button {
+/* .toolbar-dropdown button {
     display: inline-flex;
     justify-content: center;
     width: auto;
     min-width: max-content;
     padding: 4px 8px;
     white-space: nowrap;
+} */
+
+.dropdown-input {
+    border: none;
+    outline: none;
+    flex: 1;
+    background: transparent;
+}
+
+.dropdown-arrow {
+    background: none;
+    border: none;
+    cursor: pointer;
 }
 
 .dropdown-menu {

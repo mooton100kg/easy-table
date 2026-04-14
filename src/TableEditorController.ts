@@ -3,15 +3,15 @@ import { Notice } from "obsidian";
 export class TableEditorController {
     table: HTMLTableElement | null = null;
     tableScale: number = 1;
-    tableContainer: HTMLElement | null = null;
+    tableContainer: Element | null = null;
     activeCell: HTMLElement | null = null;
     selectedCells: Set<HTMLTableCellElement> = new Set();
     anchorCell: HTMLTableCellElement | null = null;
 
-    constructor(table: HTMLTableElement, tableContainer: HTMLElement) {
+    constructor(table: HTMLTableElement, tableContainer: Element) {
         this.table = table;
-        this.tableScale = getScale(table);
         this.tableContainer = tableContainer;
+        this.tableScale = getScale(table);
     }
 
     // ================== table state management
@@ -597,7 +597,6 @@ export class TableEditorController {
         }
     }
 }
-
 function getScale(el: HTMLElement): number {
     const transform = getComputedStyle(el).transform;
 
