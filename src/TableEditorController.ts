@@ -293,10 +293,16 @@ export class TableEditorController {
         else if (cell.colSpan > 1) { targetCol = pos.bottomCol; }
 
         for (let r = 0; r < grid.length; r++) {
-            const newTd = document.createElement("td");
+            // if cell is header create th
+            let tagName: "td" | "th" = "td";
+            if (r === 0 && table.classList.contains("top-header")) tagName = "th";
 
-            newTd.contentEditable = "true";
-            this.bindCell(newTd);
+            const el = document.createElement(tagName);
+
+            el.contentEditable = "true";
+            this.bindCell(el);
+
+            if (tagName === "th") this.toggleScope(el, r, targetCol, "col");
 
             if (type === "insert") {
                 // row 1 : [d] [d] {e} [e]
@@ -306,17 +312,17 @@ export class TableEditorController {
                 // row 2 : [f] [f] {f} [g] -> refPos.bottomCol = 2
                 const refPos = this.getCellPosition(referenceCell, grid);
 
-                // case 1 : refCell inside colSpan -> expand colspan
+                // case 1 : refCell in between colSpan -> expand colspan
                 if (refPos && refPos.bottomCol > targetCol) {
                     referenceCell.colSpan += 1;
                 }
                 // case 2 : refCell outside colSpan -> insert new cell
                 else {
-                    table.rows[r]!.insertAfter(newTd, referenceCell);
+                    table.rows[r]!.insertAfter(el, referenceCell);
                 }
             }
             else if (type === "add") {
-                table.rows[r]!.appendChild(newTd);
+                table.rows[r]!.appendChild(el);
             }
         }
     }
@@ -353,7 +359,7 @@ export class TableEditorController {
                 const referenceCell = grid[targetRow]![c]!;
                 const refPos = this.getCellPosition(referenceCell, grid);
 
-                // if refCell inside rowSpan -> expand rowspan
+                // if refCell in between rowSpan -> expand rowspan
                 if (refPos && refPos.bottomRow > targetRow) {
                     referenceCell.rowSpan += 1;
                     colCount -= 1;
@@ -363,14 +369,20 @@ export class TableEditorController {
 
         const newRow = document.createElement("tr");
 
-        // create new cell = col count of next row
+        // create new cell 
         for (let i = 0; i < colCount; i++) {
-            const td = document.createElement("td");
+            // if cell is header create th
+            let tagName: "td" | "th" = "td";
+            if (i === 0 && table.classList.contains("side-header")) tagName = "th";
 
-            td.contentEditable = "true";
-            this.bindCell(td);
+            const el = document.createElement(tagName);
 
-            newRow.appendChild(td);
+            el.contentEditable = "true";
+            this.bindCell(el);
+
+            if (tagName === "th") this.toggleScope(el, targetRow + 1, i, "row");
+
+            newRow.appendChild(el);
         }
 
         if (type === "add") {

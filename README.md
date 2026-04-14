@@ -18,4 +18,4 @@
 ## Bug fix
 
 - [x] fix delete row / col
-- [ ] fix add row / col
+- [x] fix add row / col with th
