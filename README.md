@@ -17,5 +17,5 @@
 
 ## Bug fix
 
-- [ ] fix delete row / col
+- [x] fix delete row / col
 - [ ] fix add row / col

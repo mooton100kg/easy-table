@@ -332,7 +332,7 @@ export class TableEditorController {
         // [a] [d] [e]
         // {b} [d] [e]
         // [c] [d] [f]
-        const pos = this.getCellPosition(cell as HTMLTableCellElement, grid);
+        const pos = this.getCellPosition(cell, grid);
         if (!pos) return;
 
         let targetRow = pos.topRow;
@@ -386,14 +386,27 @@ export class TableEditorController {
     deleteRow() {
         const ctx = this.getContext();
         if (!ctx) return;
-        const { row, table } = ctx;
+        const { cell, row, table } = ctx;
 
-        const rows = table.querySelectorAll("tr");
+        // find index of current cell
+        const grid = this.getGrid(table);
+        const pos = this.getCellPosition(cell, grid);
+        if (!pos) return;
+
+        for (let c = 0; c < grid[pos.topRow]!.length; c++) {
+            const referenceCell = grid[pos.topRow]![c];
+            if (!referenceCell) return;
+
+            // catch merge cell
+            if (referenceCell.rowSpan > 1) {
+                referenceCell.rowSpan -= 1;
+            }
+        }
 
         // prevent deleting last row
-        if (rows.length === 1) return;
+        if (grid.length === 1) return;
 
-        row.remove();
+        table.rows[pos.topRow]?.remove();
     }
 
     // delete col function
@@ -403,18 +416,26 @@ export class TableEditorController {
         const { cell, row, table } = ctx;
 
         // find index of current cell
-        const cells = Array.from(row.children);
-        const colIndex = cells.indexOf(cell);
+        const grid = this.getGrid(table);
+        const pos = this.getCellPosition(cell, grid);
+        if (!pos) return;
 
-        const rows = table.querySelectorAll("tr");
+        for (let r = 0; r < grid.length; r++) {
+            const referenceCell = grid[r]![pos.topCol];
+            if (!referenceCell) return;
 
-        // prevent deleting last column
-        if (cells.length === 1) return;
+            // catch merge cell
+            if (referenceCell.colSpan > 1) {
+                referenceCell.colSpan -= 1;
+            }
 
-        rows.forEach((row) => {
-            const cells = Array.from(row.children);
-            cells[colIndex]?.remove();
-        });
+            else {
+                // prevent deleting last column
+                if (grid[r]?.length === 1) return;
+
+                referenceCell.remove();
+            }
+        }
     }
 
     // merge cell function
