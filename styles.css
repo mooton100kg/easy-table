@@ -35,6 +35,17 @@ th[scope="corner"] {
     text-align: left;
 }
 
+.spread td,
+.spread th {
+    white-space: noewrap;
+    width: max-content;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+    max-width: 100%
+}
+
 /* =================== Modal style =================== */
 
 /* UI background */
@@ -109,4 +120,45 @@ th[scope="corner"] {
 
 .table-editor-toolbar button:hover {
     background: var(--background-modifier-hover);
+}
+
+/* dropdown */
+.toolbar-dropdown {
+    position: relative;
+}
+
+.toolbar-dropdown button {
+    display: inline-flex;
+    justify-content: center;
+    width: auto;
+    min-width: max-content;
+    padding: 4px 8px;
+    white-space: nowrap;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    padding: 4px;
+    z-index: 1000;
+    min-width: 160px;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    padding: 4px 8px;
+    cursor: pointer;
+}
+
+.dropdown-item:hover {
+    background: var(--background-modifier-hover);
+}
+
+.checkmark {
+    width: 16px;
+    margin-right: 6px;
 }

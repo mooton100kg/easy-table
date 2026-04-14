@@ -32,6 +32,15 @@ export class TableToolbar {
         });
 
         // table
+        this.createDropdown(groupTable, "Table class", "Set table class", {
+            mode: "multi",
+            itemsList: this.controller.table?.className.split(" ") || []
+        }, [
+            { label: "Spread", value: "spread" },
+        ], (value) => {
+            this.controller.table?.classList.toggle(value);
+        });
+
         this.createButton(groupTable, Icons.topTable, "Set Top Header", () => {
             this.controller.setTopHeader();
         });
@@ -124,4 +133,101 @@ export class TableToolbar {
             action();
         }
     }
+
+    // dropdown creator
+    createDropdown(
+        parent: HTMLElement,
+        label: string,
+        title: string,
+        config: MultiSelectConfig | SingleSelectConfig,
+        items: {
+            label: string;
+            value: string;
+        }[],
+        action: (value: string) => void,
+    ) {
+        const wrapper = parent.createDiv("toolbar-dropdown");
+
+        // create dropdown button
+        const btn = wrapper.createEl("button", { text: label + " ▾" });
+        btn.setAttribute("title", title);
+
+        // create dropdown item container 
+        const menu = wrapper.createDiv("dropdown-menu");
+        menu.style.display = "none";
+
+        // open dropdown when click button
+        btn.onclick = (e) => {
+            e.stopPropagation();
+            menu.style.display = menu.style.display === "none" ? "block" : "none";
+        };
+
+        // close dropdown when click outside
+        document.addEventListener("click", () => {
+            menu.style.display = "none";
+        });
+
+        const rows: {
+            row: HTMLElement;
+            check: HTMLElement;
+            active: boolean;
+        }[] = [];
+
+        // create each item
+        items.forEach((item) => {
+            const row = menu.createDiv("dropdown-item");
+
+            const check = row.createSpan("checkmark");
+            check.textContent = "✓";
+
+            const labelEl = row.createSpan("label");
+            labelEl.textContent = item.label;
+
+            let active = false;
+            if (config.mode === "multi") {
+                // check if table already contain this class
+                active = config.itemsList.includes(item.value) ?? false;
+            }
+            check.style.visibility = active ? "visible" : "hidden";
+
+            // row = item container
+            // check = checkmark el before label
+            rows.push({ row, check, active });
+
+            row.onclick = (e) => {
+                e.stopPropagation();
+
+                // do the action when click
+                action(item.value);
+
+                // ======== single mode logic
+                if (config.mode === "single") {
+                    // disable all row active status
+                    rows.forEach(r => {
+                        r.active = false;
+                        r.check.style.visibility = "hidden";
+                    });
+
+                    // active the clicked row
+                    active = true;
+                }
+
+                // ======== multi mode logic
+                else active = !active;
+
+                // apply state
+                check.style.visibility = active ? "visible" : "hidden";
+            }
+        });
+    }
+}
+
+type MultiSelectConfig = {
+    mode: "multi";
+    itemsList: string[];
+};
+
+type SingleSelectConfig = {
+    mode: "single";
+    itemsList?: never;
 }

@@ -1,13 +1,21 @@
-# Feature
+# Easy table plugin
+
+## Feature
 
 - [x] add th
 - [x] table orientation (side / top)
-- [ ] able to merge with merged cell
-- [ ] table class for decoration (spread)
+- [x] able to merge with merged cell
+- [x] table class for decoration (spread)
+- [ ] someway to resize the table
 - [ ] cell alignment
 - [ ] font color
 - [ ] font size
 - [ ] clean up toolbar
 - [ ] undo/reundo
 
-![](toolbar.jpeg)
+![toolbar](toolbar.jpeg)
+
+## Bug fix
+
+- [ ] fix delete row / col
+- [ ] fix add row / col

@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, Modal, setIcon } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Notice, setIcon } from 'obsidian';
 
 import { TableToolbar } from "./Toolbar";
 import { TableEditorController } from "./TableEditorController";
@@ -25,22 +25,27 @@ export class TableEditorModal extends Modal {
         // Convert html string to DOM
         const parser = new DOMParser();
         const doc = parser.parseFromString(this.html, "text/html");
-        // Extract <table> from DOM
+        // Extract wrapper from DOM
+        const wrapper = doc.querySelector(".table-wrapper");
         const table = doc.querySelector("table");
 
         // detect if html is valid table
-        if (!table) {
-            contentEl.createEl("p", { text: "Invalid table" });
+        if (!table || !wrapper) {
+            new Notice("Invalid table")
+            this.onClose;
             return;
         }
 
-        table.addClass("table-editor-table");
+        // clone the table
+        const tableClone = table.cloneNode(true) as HTMLTableElement
+
+        tableClone.addClass("table-editor-table");
 
         // create controller
-        const controller = new TableEditorController(table);
+        const controller = new TableEditorController(tableClone);
         new TableToolbar(toolbarEl, controller);
 
-        Array.from(table.rows).forEach((tr) => {
+        Array.from(tableClone.rows).forEach((tr) => {
             Array.from(tr.cells).forEach((td) => {
                 td.contentEditable = "true";
 
@@ -48,7 +53,9 @@ export class TableEditorModal extends Modal {
                 controller.bindCell(td);
             });
         });
-        contentEl.appendChild(table);
+
+        // add clone inside contentEl
+        contentEl.appendChild(tableClone);
 
         // ======================= create save button
         const saveBtn = contentEl.createEl("button", { text: "Save" });
@@ -56,12 +63,11 @@ export class TableEditorModal extends Modal {
         saveBtn.onclick = () => {
             const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 
-            const updatedHtml = controller.buildHtml(table);
+            const updatedHtml = controller.buildHtml(wrapper, tableClone);
 
             if (!view) return;
             view.editor.replaceSelection(updatedHtml);
             this.close();
-
         };
 
     }

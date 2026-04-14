@@ -171,17 +171,21 @@ export class TableEditorController {
     }
 
     //Convert table back to normal table
-    buildHtml(table: HTMLTableElement): string {
-        table.removeClass("table-editor-table");
+    buildHtml(wrapper: Element, newTable: HTMLTableElement): string {
 
-        Array.from(table.rows).forEach((tr) => {
+        newTable.removeClass("table-editor-table");
+
+        Array.from(newTable.rows).forEach((tr) => {
             Array.from(tr.cells).forEach((td) => {
                 td.classList.remove("selected-cell");
                 td.removeAttribute("contenteditable");
             });
         });
 
-        return table.outerHTML;
+        const originalTable = wrapper.querySelector("table");
+        originalTable?.replaceWith(newTable);
+
+        return wrapper.outerHTML;
     }
 
     // Convert between td and th

@@ -19,8 +19,8 @@ export default class EasyPluginPlugin extends Plugin {
 
 				// Check if selection is <table>
 				const hasTable =
-					selection.startsWith("<table") &&
-					selection.endsWith("</table>");
+					selection.includes("<table") &&
+					selection.includes("</table>");
 
 				if (!hasTable) return;
 
