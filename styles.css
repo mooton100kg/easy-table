@@ -12,6 +12,10 @@ th {
     padding: 1em;
 }
 
+td {
+    display: table-cell;
+}
+
 th[scope="col"] {
     background-color: var(--header-top);
     color: var(--counter-text);

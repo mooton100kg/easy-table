@@ -170,6 +170,7 @@ export class TableEditorController {
                 this.clearSelectedCells();
                 this.setActiveCell(cell);
                 cell.classList.add("selected-cell");
+                this.selectedCells.add(cell);
             }
         });
     }
@@ -596,7 +597,22 @@ export class TableEditorController {
             }
         }
     }
+
+    setAlignment(options: {
+        horizontal?: "left" | "center" | "right";
+        vertical?: "top" | "middle" | "bottom";
+    }) {
+        const selectCells = this.selectedCells;
+        if (!selectCells) return;
+
+        selectCells.forEach((cell) => {
+            if (options.horizontal) cell.style.textAlign = options.horizontal;
+            if (options.vertical) cell.style.verticalAlign = options.vertical;
+        })
+
+    }
 }
+
 function getScale(el: HTMLElement): number {
     const transform = getComputedStyle(el).transform;
 

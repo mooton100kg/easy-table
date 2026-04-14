@@ -21,19 +21,20 @@ export class TableToolbar {
         this.container.addClass("table-editor-toolbar");
 
         // ============== Groups
-        const groupTable = this.container.createDiv("toolbar-group table");
+        const groupClass = this.container.createDiv("toolbar-group class");
         const groupFormat = this.container.createDiv("toolbar-group format");
         const groupList = this.container.createDiv("toolbar-group list");
         const groupCell = this.container.createDiv("toolbar-group cell");
+        const groupTable = this.container.createDiv("toolbar-group Table");
 
         // ============== Button
-        this.createButton(groupTable, "bug", "debug", () => {
+        this.createButton(groupClass, "bug", "debug", () => {
             console.log("focus: ", this.controller.activeCell);
             console.log(this.controller.tableScale);
         });
 
-        // table
-        this.createDropdown(groupTable, "test", "", {
+        // class
+        this.createDropdown(groupClass, "test", "", {
             mode: "single",
             itemsList: "50"
         }, generateItems(1, 100, "%")
@@ -41,15 +42,15 @@ export class TableToolbar {
                 console.log(value);
             })
 
-        this.createButton(groupTable, Icons.increaseSize, "Increase Table Size", () => {
+        this.createButton(groupClass, Icons.increaseSize, "Increase Table Size", () => {
             this.controller.resizeTable(10)
         }, false);
 
-        this.createButton(groupTable, Icons.decreaseSize, "Decrease Table Size", () => {
+        this.createButton(groupClass, Icons.decreaseSize, "Decrease Table Size", () => {
             this.controller.resizeTable(-10)
         }, false);
 
-        this.createDropdown(groupTable, "Table class", "Set table class", {
+        this.createDropdown(groupClass, "Table class", "Set table class", {
             mode: "multi",
             itemsList: this.controller.table?.className.split(" ") || []
         }, [
@@ -58,11 +59,11 @@ export class TableToolbar {
             this.controller.table?.classList.toggle(value);
         });
 
-        this.createButton(groupTable, Icons.topTable, "Set Top Header", () => {
+        this.createButton(groupClass, Icons.topTable, "Set Top Header", () => {
             this.controller.setTopHeader();
         });
 
-        this.createButton(groupTable, Icons.sideTable, "Set Side Header", () => {
+        this.createButton(groupClass, Icons.sideTable, "Set Side Header", () => {
             this.controller.setSideHeader();
         });
 
@@ -116,6 +117,11 @@ export class TableToolbar {
         this.createButton(groupCell, "chevrons-right-left", "Delete Row", () => {
             this.controller.deleteRow();
         });
+
+        // table
+        this.createButton(groupTable, Icons.alignTopLeft, "Align Top Left", () => {
+            this.controller.setAlignment({ horizontal: "left", vertical: "top" });
+        });
     }
 
     // Button creator
@@ -154,150 +160,6 @@ export class TableToolbar {
             action();
         }
     }
-
-    // dropdown creator
-    /*createDropdown(
-        parent: HTMLElement,
-        label: string,
-        title: string,
-        config: MultiSelectConfig | SingleSelectConfig,
-        items: {
-            label: string;
-            value: string;
-        }[],
-        action: (value: string) => void,
-    ) {
-        const wrapper = parent.createDiv("toolbar-dropdown");
-
-        // create dropdown button
-        const input = wrapper.createEl("input", {
-            type: "text",
-            placeholder: label
-        });
-        input.classList.add("dropdown-input")
-        if (config.mode === "single") input.value = config.itemsList;
-
-        // handle enter key
-        input.addEventListener("keydown", (e) => {
-            if (e.key === "Enter") {
-                e.preventDefault();
-                const value = input.value;
-
-                // find matching item
-                const match = items.find(item => item.value === value);
-
-                if (match) {
-                    action(match.value);
-                    input.value = match.value;
-                }
-
-                // update row
-                rows.forEach(r => {
-                    r.active = r.value === value;
-                    r.check.style.visibility = r.active ? "visible" : "hidden";
-                })
-            }
-        });
-
-        const arrow = wrapper.createEl("button");
-        setIcon(arrow, "chevron-down");
-
-        // create dropdown item container 
-        const menu = wrapper.createDiv("dropdown-menu");
-        menu.style.display = "none";
-
-        // open dropdown when click button
-        arrow.onclick = (e) => {
-            e.stopPropagation();
-
-            const isOpen = menu.style.display === "block";
-            // condition ? value_if_true : value_if_false
-            menu.style.display = isOpen ? "none" : "block";
-
-            // auto scroll to current value
-            if (!isOpen && config.mode === "single") {
-                // wait for DOM render
-                setTimeout(() => {
-                    const activeRow = rows.find(r => r.active);
-
-                    if (activeRow) {
-                        activeRow.row.scrollIntoView({
-                            block: "center",
-                            behavior: "auto"
-                        })
-                    }
-                }, 0);
-            }
-        };
-
-        // close dropdown when click outside
-        document.addEventListener("click", () => {
-            menu.style.display = "none";
-        });
-
-        const rows: {
-            row: HTMLElement;
-            check: HTMLElement;
-            active: boolean;
-            value: string;
-        }[] = [];
-
-        // create each item
-        items.forEach((item) => {
-            const row = menu.createDiv("dropdown-item");
-
-            const check = row.createSpan("checkmark");
-            check.textContent = "✓";
-
-            const labelEl = row.createSpan("label");
-            labelEl.textContent = item.label;
-
-            let active = false;
-            if (config.mode === "multi") {
-                // check if table already contain this class
-                active = config.itemsList.includes(item.value) ?? false;
-            }
-            else if (config.mode === "single") {
-                active = config.itemsList === item.value
-            }
-
-            check.style.visibility = active ? "visible" : "hidden";
-
-            const value = item.value
-
-            // row = item container
-            // check = checkmark el before label
-            rows.push({ row, check, active, value });
-
-            row.onclick = (e) => {
-                e.stopPropagation();
-
-                // do the action when click
-                action(item.value);
-
-                // ======== single mode logic
-                if (config.mode === "single") {
-                    // disable all row active status
-                    rows.forEach(r => {
-                        r.active = false;
-                        r.check.style.visibility = "hidden";
-                    });
-
-                    // active the clicked row
-                    active = true;
-
-                    // update the input
-                    input.value = item.value;
-                }
-
-                // ======== multi mode logic
-                else active = !active;
-
-                // apply state
-                check.style.visibility = active ? "visible" : "hidden";
-            }
-        });
-    }*/
 
     createDropdown(
         parent: HTMLElement,
