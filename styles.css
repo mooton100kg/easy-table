@@ -15,6 +15,7 @@ th {
 th[scope="col"] {
     background-color: var(--header-top);
     color: var(--counter-text);
+    caret-color: var(--counter-text);
     border: 1px solid white;
     font-weight: bold;
 }
@@ -22,6 +23,7 @@ th[scope="col"] {
 th[scope="row"] {
     background-color: var(--header-side);
     color: var(--counter-text);
+    caret-color: var(--counter-text);
     border: 1px solid white;
     font-weight: bold;
     text-align: left;
@@ -30,6 +32,7 @@ th[scope="row"] {
 th[scope="corner"] {
     background-color: var(--header-corner);
     color: var(--counter-text);
+    caret-color: var(--counter-text);
     border: 1px solid white;
     font-weight: bold;
     text-align: left;
