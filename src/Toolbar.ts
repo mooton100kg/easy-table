@@ -156,7 +156,7 @@ export class TableToolbar {
     }
 
     // dropdown creator
-    createDropdown(
+    /*createDropdown(
         parent: HTMLElement,
         label: string,
         title: string,
@@ -297,6 +297,132 @@ export class TableToolbar {
                 check.style.visibility = active ? "visible" : "hidden";
             }
         });
+    }*/
+
+    createDropdown(
+        parent: HTMLElement,
+        label: string,
+        title: string,
+        config: MultiSelectConfig | SingleSelectConfig,
+        items: {
+            label: string;
+            value: string;
+        }[],
+        action: (value: string) => void,
+    ) {
+        const wrapper = parent.createDiv("toolbar-dropdown");
+
+        // ================ state
+        let selectedValue =
+            config.mode === "single" ? config.itemsList : null;
+
+        let selectedValues =
+            config.mode === "multi" ? new Set(config.itemsList) : null;
+
+        const rows: {
+            row: HTMLElement;
+            check: HTMLElement;
+            value: string;
+        }[] = [];
+
+        // ================ input
+        const input = wrapper.createEl("input", {
+            type: "text",
+            placeholder: label,
+        });
+        if (config.mode === "single") input.value = config.itemsList;
+        input.classList.add("dropdown-input")
+
+        // ================ sync UI
+        const render = () => {
+            rows.forEach(r => {
+                let active = false;
+
+                if (config.mode === "single") {
+                    active = r.value === selectedValue;
+                } else {
+                    active = selectedValues!.has(r.value);
+                }
+
+                r.check.style.visibility = active ? "visible" : "hidden";
+            })
+        };
+
+        const setSelected = (value: string) => {
+            if (config.mode === "single") {
+                selectedValue = value;
+                input.value = value;
+            } else {
+                if (selectedValues!.has(value)) selectedValues!.delete(value);
+                else selectedValues!.add(value);
+            }
+            action(value);
+            render();
+        };
+
+        // ================ arrow
+        const arrow = wrapper.createEl("button");
+        setIcon(arrow, "chevron-down");
+
+        // ================ menu
+        const menu = wrapper.createDiv("dropdown-menu");
+        menu.style.display = "none";
+
+        const toggleMenu = () => {
+            const isOpen = menu.style.display === "block";
+            menu.style.display = isOpen ? "none" : "block";
+
+            if (!isOpen && config.mode === "single") {
+                requestAnimationFrame(() => {
+                    const active = rows.find(r => r.value === selectedValue);
+                    active?.row.scrollIntoView({ block: "center" });
+                });
+            }
+        };
+
+        arrow.onclick = (e) => {
+            e.stopPropagation();
+            toggleMenu();
+        };
+
+        // close dropdown when click outside
+        document.addEventListener("click", () => {
+            menu.style.display = "none";
+        })
+
+        // ================ handle enter key
+        input.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+
+                const value = input.value;
+                if (!selectedValues?.has(value)) setSelected(value);
+            }
+        });
+
+        // ================ items
+        items.forEach((item) => {
+            const row = menu.createDiv("dropdown-item");
+
+            const check = row.createSpan("checkmark");
+            check.textContent = "✓";
+
+            row.createSpan("label").textContent = item.label;
+
+            row.dataset.value = item.value;
+
+            // row = item container
+            // check = checkmark el before label
+            rows.push({ row, check, value: item.value });
+
+            row.onclick = (e) => {
+                e.stopPropagation();
+
+                setSelected(item.value)
+            }
+        });
+
+        render();
     }
 }
 
