@@ -1,17 +1,38 @@
-import { App, Editor, MarkdownView, Modal, Notice, setIcon } from 'obsidian';
+import { ItemView, WorkspaceLeaf, Notice, MarkdownView, EditorPosition } from 'obsidian';
 
 import { TableToolbar } from "./Toolbar";
-import { TableEditorController } from "./TableEditorController";
+import { TableEditorController } from 'TableEditorController';
 
-export class TableEditorModal extends Modal {
+export const VIEW_TYPE_TABLE_EDITOR = "table-editor-view";
+
+type EditorContext = {
+    editor: any;
+    from: EditorPosition;
+    to: EditorPosition;
     html: string;
+}
 
-    constructor(app: App, html: string) {
-        super(app);
-        this.html = html;
+export class TableEditorView extends ItemView {
+    context: EditorContext | null = null;
+
+    constructor(leaf: WorkspaceLeaf) {
+        super(leaf);
     }
 
-    onOpen() {
+    getViewType(): string {
+        return VIEW_TYPE_TABLE_EDITOR;
+    }
+
+    getDisplayText(): string {
+        return "Table Editor";
+    }
+
+    setContext(ctx: EditorContext) {
+        this.context = ctx;
+        this.render();
+    }
+
+    render() {
         const { contentEl } = this;
         contentEl.empty();
 
@@ -23,14 +44,17 @@ export class TableEditorModal extends Modal {
 
         // ======================= create UI table
         // Convert html string to DOM
+        if (!this.context) return;
+        const { html } = this.context;
         const parser = new DOMParser();
-        const doc = parser.parseFromString(this.html, "text/html");
+        const doc = parser.parseFromString(html, "text/html");
         // Extract wrapper from DOM
         const wrapper = doc.querySelector(".table-wrapper");
         const table = doc.querySelector("table");
 
         // detect if html is valid table
         if (!table || !wrapper) {
+            console.log(html)
             new Notice("Invalid table")
             this.onClose;
             return;
@@ -61,18 +85,24 @@ export class TableEditorModal extends Modal {
         const saveBtn = contentEl.createEl("button", { text: "Save" });
 
         saveBtn.onclick = () => {
-            const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+            if (!this.context) return;
+
+            const { editor, from, to } = this.context;
 
             const updatedHtml = controller.buildHtml(wrapper, tableClone);
 
-            if (!view) return;
-            view.editor.replaceSelection(updatedHtml);
-            this.close();
-        };
+            editor.replaceRange(updatedHtml, from, to);
 
+            // close tab after save
+            this.leaf.detach();
+        };
     }
 
-    onClose() {
+    async onOpen() {
+        this.render();
+    }
+
+    async onClose() {
         this.contentEl.empty();
     }
 }

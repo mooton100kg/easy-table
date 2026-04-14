@@ -1,12 +1,17 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin } from 'obsidian';
 import { DEFAULT_SETTINGS, MyPluginSettings, SampleSettingTab } from "./settings";
-import { TableEditorModal } from "./TableEditorModal";
-// Remember to rename these classes and interfaces! new Notice("Clickkk");
+
+import { TableEditorView, VIEW_TYPE_TABLE_EDITOR } from './TableEditorView';
 
 export default class EasyPluginPlugin extends Plugin {
 	settings: MyPluginSettings;
 
 	async onload() {
+		this.registerView(
+			VIEW_TYPE_TABLE_EDITOR,
+			(leaf) => new TableEditorView(leaf)
+		);
+
 		await this.loadSettings();
 
 		this.registerEvent(
@@ -28,9 +33,33 @@ export default class EasyPluginPlugin extends Plugin {
 				menu.addItem((item) => {
 					item
 						.setTitle("Edit Table")
-						.onClick(() => {
-							console.log("edit table")
-							new TableEditorModal(this.app, selection).open();
+						.onClick(async () => {
+							const mdView = this.app.workspace.getActiveViewOfType(MarkdownView);
+							if (!mdView) return;
+
+							const editor = mdView.editor;
+
+							const selection = editor.getSelection();
+							if (!selection) return;
+
+							// open custom tab + prevent multiple tabs
+							const leaf =
+								this.app.workspace.getLeavesOfType(VIEW_TYPE_TABLE_EDITOR)[0]
+								?? this.app.workspace.getLeaf(true);
+
+							await leaf.setViewState({
+								type: VIEW_TYPE_TABLE_EDITOR,
+								active: true,
+							});
+
+							const view = leaf.view as TableEditorView;
+
+							view.setContext({
+								html: selection,
+								editor: editor,
+								from: editor.getCursor("from"),
+								to: editor.getCursor("to"),
+							});
 						})
 				})
 			}));
@@ -38,7 +67,6 @@ export default class EasyPluginPlugin extends Plugin {
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new SampleSettingTab(this.app, this));
 	}
-
 
 	onunload() {
 	}

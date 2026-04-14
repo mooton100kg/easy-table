@@ -6,6 +6,7 @@
 - [x] table orientation (side / top)
 - [x] able to merge with merged cell
 - [x] table class for decoration (spread)
+- [x] edit in custom tab
 - [ ] someway to resize the table
 - [ ] cell alignment
 - [ ] font color
