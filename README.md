@@ -10,6 +10,7 @@
 - [x] someway to resize the table
 - [x] change dropdown to type input
 - [x] cell alignment
+- [ ] insert image
 - [ ] font color
 - [ ] font size
 - [ ] clean up toolbar
@@ -21,4 +22,7 @@
 
 - [x] fix delete row / col
 - [x] fix add row / col with th
+- [ ] fix convert MD table
+  - [ ] image
+  - [ ] preview table class
 - [ ] link resize btn and input
