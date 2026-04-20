@@ -9,7 +9,7 @@
 - [x] edit in custom tab
 - [x] someway to resize the table
 - [x] change dropdown to type input
-- [ ] cell alignment
+- [x] cell alignment
 - [ ] font color
 - [ ] font size
 - [ ] clean up toolbar
@@ -21,3 +21,4 @@
 
 - [x] fix delete row / col
 - [x] fix add row / col with th
+- [ ] link resize btn and input

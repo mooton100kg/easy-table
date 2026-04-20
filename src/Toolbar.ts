@@ -25,32 +25,39 @@ export class TableToolbar {
         const groupFormat = this.container.createDiv("toolbar-group format");
         const groupList = this.container.createDiv("toolbar-group list");
         const groupCell = this.container.createDiv("toolbar-group cell");
-        const groupTable = this.container.createDiv("toolbar-group Table");
+        const groupTable = this.container.createDiv("toolbar-group alignment");
 
-        // ============== Button
+        /*// ============== Button
         this.createButton(groupClass, "bug", "debug", () => {
             console.log("focus: ", this.controller.activeCell);
-            console.log(this.controller.tableScale);
         });
 
         // class
-        this.createDropdown(groupClass, "test", "", {
+        const tableSize = this.createDropdown(groupClass, "Table size", "", {
             mode: "single",
-            itemsList: "50"
+            itemsList: String(this.controller.tableScale * 100),
         }, generateItems(1, 100, "%")
             , (value) => {
-                console.log(value);
+                const size = !isNaN(Number(value)) ? Number(value) : 1;
+                this.controller.resizeTable(undefined, size);
             })
 
         this.createButton(groupClass, Icons.increaseSize, "Increase Table Size", () => {
-            this.controller.resizeTable(10)
+            const size = this.controller.resizeTable(10)
+            tableSize.setValue(String(this.controller.tableScale * 100))
         }, false);
 
         this.createButton(groupClass, Icons.decreaseSize, "Decrease Table Size", () => {
-            this.controller.resizeTable(-10)
+            const size = this.controller.resizeTable(-10)
+            tableSize.setValue(String(this.controller.tableScale * 100))
         }, false);
 
-        this.createDropdown(groupClass, "Table class", "Set table class", {
+        this.createButton(groupClass, "align-horizontal-space-around", "fit table to screen", () => {
+            const size = this.controller.resizeTable(undefined, undefined, true);
+            tableSize.setValue(String(this.controller.tableScale * 100))
+        })*/
+
+        const Classdropdown = this.createDropdown(groupClass, "Table class", "Set table class", {
             mode: "multi",
             itemsList: this.controller.table?.className.split(" ") || []
         }, [
@@ -122,6 +129,30 @@ export class TableToolbar {
         this.createButton(groupTable, Icons.alignTopLeft, "Align Top Left", () => {
             this.controller.setAlignment({ horizontal: "left", vertical: "top" });
         });
+        this.createButton(groupTable, Icons.alignTopCenter, "Align Top Center", () => {
+            this.controller.setAlignment({ horizontal: "center", vertical: "top" });
+        });
+        this.createButton(groupTable, Icons.alignTopRight, "Align Top Right", () => {
+            this.controller.setAlignment({ horizontal: "right", vertical: "top" });
+        });
+        this.createButton(groupTable, Icons.alignMiddleLeft, "Align Middle Left", () => {
+            this.controller.setAlignment({ horizontal: "left", vertical: "middle" });
+        });
+        this.createButton(groupTable, Icons.alignMiddleCenter, "Align Middle Center", () => {
+            this.controller.setAlignment({ horizontal: "center", vertical: "middle" });
+        });
+        this.createButton(groupTable, Icons.alignMiddleRight, "Align Middle Right", () => {
+            this.controller.setAlignment({ horizontal: "right", vertical: "middle" });
+        });
+        this.createButton(groupTable, Icons.alignBottomLeft, "Align Bottom Left", () => {
+            this.controller.setAlignment({ horizontal: "left", vertical: "bottom" });
+        });
+        this.createButton(groupTable, Icons.alignBottomCenter, "Align Bottom Center", () => {
+            this.controller.setAlignment({ horizontal: "center", vertical: "bottom" });
+        });
+        this.createButton(groupTable, Icons.alignBottomRight, "Align Bottom Right", () => {
+            this.controller.setAlignment({ horizontal: "right", vertical: "bottom" });
+        });
     }
 
     // Button creator
@@ -173,6 +204,7 @@ export class TableToolbar {
         action: (value: string) => void,
     ) {
         const wrapper = parent.createDiv("toolbar-dropdown");
+        wrapper.style.gridColumn = "span 2";
 
         // ================ state
         let selectedValue =
@@ -225,6 +257,7 @@ export class TableToolbar {
         // ================ arrow
         const arrow = wrapper.createEl("button");
         setIcon(arrow, "chevron-down");
+        arrow.classList.add("dropdown-arrow");
 
         // ================ menu
         const menu = wrapper.createDiv("dropdown-menu");
@@ -285,6 +318,76 @@ export class TableToolbar {
         });
 
         render();
+
+        return {
+            setValue: (value: string) => {
+                if (config.mode === "single") {
+                    selectedValue = value;
+                    input.value = value;
+                } else {
+                    selectedValues!.add(value);
+                }
+                render();
+            }
+        }
+    }
+
+    createColorPicker(
+        parent: HTMLElement,
+        title: string,
+    ) {
+        let currentColor = "#000000";
+
+        const wrapper = parent.createDiv("color-picker-wrapper");
+
+        // ============ apply button
+        const applyBtn = wrapper.createEl("button", {
+            text: "A",
+        });
+        applyBtn.classList.add("color-picker-btn");
+        applyBtn.title = title;
+
+        const underline = applyBtn.createDiv();
+        underline.style.backgroundColor = currentColor;
+
+        // ============ function logic
+        function applyColor(color: string) {
+            currentColor = color;
+
+            underline.style.backgroundColor = color;
+        }
+
+        // ============ arrow
+        const arrow = wrapper.createEl("button");
+        setIcon(arrow, "chevron-down");
+        arrow.classList.add("color-picker-arrow");
+
+        // ============ create color picker
+        const input = wrapper.createEl("input");
+        input.type = "color";
+        input.value = currentColor;
+        input.classList.add("color-picker-menu");
+        input.style.display = "block"
+        applyBtn.appendChild(input);
+
+        // ============ click arrow
+        arrow.onclick = (e) => {
+            e.stopPropagation();
+
+            input.value = currentColor;
+            input.click();
+        }
+
+        // ============ handle color selection
+        input.addEventListener("input", () => {
+            applyColor(input.value);
+            this.controller.applyTextColor(currentColor);
+        });
+
+        // ============ apply btn click
+        applyBtn.onclick = () => {
+            this.controller.applyTextColor(currentColor);
+        }
     }
 }
 
@@ -310,3 +413,4 @@ function generateItems(start: number, end: number, unit: string): { label: strin
 
     return items;
 }
+

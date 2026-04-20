@@ -47,9 +47,9 @@ export const Icons = {
         </svg>`,
     alignMiddleLeft: `
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke="currentColor">
-            <line x1="7" y1="8" x2="21" y2="8" stroke-linecap="round" />
-            <line x1="13" y1="12" x2="21" y2="12" stroke-linecap="round" />
-            <line x1="7" y1="16" x2="21" y2="16" stroke-linecap="round" />
+            <line x1="3" y1="8" x2="17" y2="8" stroke-linecap="round" />
+            <line x1="3" y1="12" x2="11" y2="12" stroke-linecap="round" />
+            <line x1="3" y1="16" x2="17" y2="16" stroke-linecap="round" />
         </svg>`,
     alignMiddleCenter: `
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke="currentColor">
@@ -65,9 +65,9 @@ export const Icons = {
         </svg>`,
     alignBottomLeft: `
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke="currentColor">
-            <line x1="7" y1="13" x2="21" y2="13" stroke-linecap="round" />
-            <line x1="13" y1="17" x2="21" y2="17" stroke-linecap="round" />
-            <line x1="7" y1="21" x2="21" y2="21" stroke-linecap="round" />
+            <line x1="3" y1="13" x2="17" y2="13" stroke-linecap="round" />
+            <line x1="3" y1="17" x2="11" y2="17" stroke-linecap="round" />
+            <line x1="3" y1="21" x2="17" y2="21" stroke-linecap="round" />
         </svg>`,
     alignBottomCenter: `
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke="currentColor">

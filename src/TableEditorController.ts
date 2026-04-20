@@ -286,10 +286,10 @@ export class TableEditorController {
 
         if (step) {
             newScale += step / 100;
-            if (newScale < 0) newScale = 0
+            if (newScale < 0) newScale = 0;
         }
         else if (size) {
-            newScale = size
+            newScale = size / 100;
         }
         else if (fit) {
             // reset to measure real size
@@ -297,14 +297,14 @@ export class TableEditorController {
 
             const tableWidth = this.table.scrollWidth;
             const containerWidth = this.tableContainer!.clientWidth;
-
+            console.log(containerWidth)
+            console.log(this.tableContainer)
             newScale = containerWidth / tableWidth;
 
         }
         this.table.style.transform = `scale(${newScale})`
         this.table.style.transformOrigin = "top left";
         this.tableScale = newScale;
-
     }
 
     // ================== btn logic
@@ -611,6 +611,38 @@ export class TableEditorController {
         })
 
     }
+
+    applyTextColor(color: string) {
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount === 0) return;
+
+        const range = selection.getRangeAt(0);
+        if (range.collapsed) return; // return if no text selected
+
+        const cell = this.activeCell;
+        if (!cell || !cell.contains(range.commonAncestorContainer)) return; // check if selection inside table
+
+        // extract content
+        expandRangeToElement(range, cell);
+        const fragment = range.extractContents();
+
+        // remove all span inside fragment
+        const cleanFragment = removeAllSpans(fragment);
+
+        // wrap with new span
+        const span = document.createElement("span");
+        span.style.color = color;
+        span.appendChild(cleanFragment);
+
+        // insert back
+        console.log(span)
+        range.insertNode(span);
+
+        // clear selection
+        selection.removeAllRanges();
+    }
+
+
 }
 
 function getScale(el: HTMLElement): number {
@@ -623,4 +655,46 @@ function getScale(el: HTMLElement): number {
     const matrix = new DOMMatrix(transform);
 
     return matrix.a;
+}
+
+function expandRangeToElement(range: Range, root: HTMLElement) {
+    let start = range.startContainer;
+    let end = range.endContainer;
+
+    // expand start
+    while (start.parentNode && start.parentNode !== root) {
+        start = start.parentNode;
+    }
+
+    // expand end
+    while (end.parentNode && end.parentNode !== root) {
+        end = end.parentNode;
+    }
+
+    range.setStartBefore(start);
+    range.setEndAfter(end);
+}
+
+function removeAllSpans(fragment: DocumentFragment): DocumentFragment {
+    const walker = document.createTreeWalker(
+        fragment,
+        NodeFilter.SHOW_ELEMENT,
+        null
+    );
+
+    let node: Node | null;
+
+    while ((node = walker.nextNode())) {
+        if (node instanceof HTMLElement && node.tagName === "SPAN") {
+            const parent = node.parentNode;
+            if (!parent) continue;
+
+            // move children out
+            while (node.firstChild) {
+                parent.insertBefore(node.firstChild, node);
+            }
+            parent.removeChild(node);
+        }
+    }
+    return fragment;
 }
