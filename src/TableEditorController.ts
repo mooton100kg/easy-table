@@ -173,6 +173,53 @@ export class TableEditorController {
                 this.selectedCells.add(cell);
             }
         });
+
+        cell.addEventListener("keydown", (e) => {
+            const selection = window.getSelection();
+            let node = selection?.anchorNode;
+
+            // find closet <li>
+            while (node && node.nodeName !== "LI") {
+                node = node.parentNode;
+            }
+
+            if (!node) return;
+            const li = node as HTMLElement;
+
+            if (e.key === "Enter") {
+                li.innerHTML = li.innerHTML.replace(/<br>/g, "");
+                e.preventDefault();
+
+                const newLi = document.createElement("li");
+                newLi.innerHTML = "<br>";
+
+                li.parentNode?.insertBefore(newLi, li.nextSibling);
+
+                // move cursor to new <li>
+                const range = document.createRange();
+                range.setStart(newLi, 0);
+                range.collapse(true);
+
+                selection?.removeAllRanges();
+                selection?.addRange(range);
+            }
+            else if (e.key === "Tab") {
+                e.preventDefault();
+
+                const prevLi = li.previousElementSibling;
+                if (!prevLi) return;
+
+                let subList = prevLi.querySelector("ul");
+                //create nested <ul> if not exist
+                if (!subList) {
+                    subList = document.createElement("ul");
+                    prevLi.appendChild(subList);
+                }
+
+                //move current <li> into sublist
+                subList.appendChild(li);
+            }
+        })
     }
 
     //Convert table back to normal table

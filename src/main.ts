@@ -84,8 +84,9 @@ export default class EasyPluginPlugin extends Plugin {
 
 				editor.replaceSelection(table);
 			}
-
 		});
+
+
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new SampleSettingTab(this.app, this));
 	}
@@ -130,7 +131,31 @@ function getMDTable(editor: Editor) {
 
 	const lines: String[] = [];
 	for (let i = start; i <= end; i++) {
-		lines.push(editor.getLine(i));
+		let line = editor.getLine(i);
+		line = line.replace(/!\[\[(.*?)\]\]/g, (match, content) => {
+			const [file, size] = content.replace(/\\\|/g, "|").split("|");
+
+			console.log("file", file);
+			console.log("size", size);
+
+			let w = "";
+			let h = "";
+
+			if (size) {
+				const parts = size.split("x");
+				w = parts[0] || "500";
+				h = parts[1];
+			}
+
+			let attrs = "";
+
+			if (w) attrs += `width="${w}"`;
+			if (h) attrs += ` height="${h}"`;
+
+			return `<img src="image/${file}" ${attrs}>`;
+		});
+
+		lines.push(line);
 	}
 
 	return {
@@ -192,4 +217,3 @@ function createHTMLTable(rows: number, cols: number): string {
 
 	return html;
 }
-//

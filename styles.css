@@ -48,6 +48,16 @@ th[scope="corner"] {
     width: max-content;
 }
 
+.center td:not(:has(ul)),
+.center th:not(:has(ul)) {
+    text-align: center;
+}
+
+.middle td:not(:has(ul)),
+.middle th:not(:has(ul)) {
+    vertical-align: middle;
+}
+
 .table-wrapper {
     overflow-x: auto;
     max-width: 100%

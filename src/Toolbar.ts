@@ -62,6 +62,8 @@ export class TableToolbar {
             itemsList: this.controller.table?.className.split(" ") || []
         }, [
             { label: "Spread", value: "spread" },
+            { label: "Center", value: "center" },
+            { label: "Middle", value: "middle" },
         ], (value) => {
             this.controller.table?.classList.toggle(value);
         });
