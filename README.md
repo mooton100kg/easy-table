@@ -11,6 +11,7 @@
 - [x] change dropdown to type input
 - [x] cell alignment
 - [ ] insert image
+- [ ] make convertMDTable competible with different detachment location
 - [ ] font color
 - [ ] font size
 - [ ] clean up toolbar
