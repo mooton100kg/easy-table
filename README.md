@@ -14,13 +14,13 @@
 - [x] change dropdown to type input
 - [x] cell alignment
 - [x] insert image by paste
+- [x] make convertMDTable competible with different attachment location
 
 </details>
 
 <details open>
 <summary>In process</summary>
 
-- [ ] make convertMDTable competible with different detachment location
 - [ ] font color
 - [ ] font size
 - [ ] clean up toolbar
@@ -45,6 +45,7 @@
 
 - [ ] fix convert MD table
   - [x] image
+  - [x] image not show in UI
   - [ ] previous table class
 - [ ] link resize btn and input
 

@@ -43,7 +43,6 @@ export class PluginController {
         const saved = await this.app.vault.createBinary(path, buffer);
 
         const src = this.app.vault.adapter.getResourcePath(saved.path);
-        console.log("Image saved at", src);
 
         this.insertImageAtCursor(src);
     }
@@ -99,9 +98,6 @@ export class PluginController {
             line = line.replace(/!\[\[(.*?)\]\]/g, (match, content) => {
                 const [file, size] = content.replace(/\\\|/g, "|").split("|");
 
-                console.log("file", file);
-                console.log("size", size);
-
                 let w = "";
                 let h = "";
 
@@ -116,7 +112,15 @@ export class PluginController {
                 if (w) attrs += `width="${w}"`;
                 if (h) attrs += ` height="${h}"`;
 
-                return `<img src="image/${file}" ${attrs}>`;
+                const activeFile = this.app.workspace.getActiveFile();
+                const fileObj = this.app.metadataCache.getFirstLinkpathDest(file, activeFile?.path || "");
+
+                if (!fileObj) {
+                    return `<img alt="${file} not found">`;
+                }
+
+                const src = this.app.vault.adapter.getResourcePath(fileObj.path);
+                return `<img src="${src}}" ${attrs}>`;
             });
 
             lines.push(line);
