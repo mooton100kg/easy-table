@@ -27,35 +27,35 @@ export class TableToolbar {
         const groupCell = this.container.createDiv("toolbar-group cell");
         const groupTable = this.container.createDiv("toolbar-group alignment");
 
-        /*// ============== Button
+        // ============== Button
         this.createButton(groupClass, "bug", "debug", () => {
-            console.log("focus: ", this.controller.activeCell);
+            console.log();
         });
-
-        // class
-        const tableSize = this.createDropdown(groupClass, "Table size", "", {
-            mode: "single",
-            itemsList: String(this.controller.tableScale * 100),
-        }, generateItems(1, 100, "%")
-            , (value) => {
-                const size = !isNaN(Number(value)) ? Number(value) : 1;
-                this.controller.resizeTable(undefined, size);
-            })
-
-        this.createButton(groupClass, Icons.increaseSize, "Increase Table Size", () => {
-            const size = this.controller.resizeTable(10)
-            tableSize.setValue(String(this.controller.tableScale * 100))
-        }, false);
-
-        this.createButton(groupClass, Icons.decreaseSize, "Decrease Table Size", () => {
-            const size = this.controller.resizeTable(-10)
-            tableSize.setValue(String(this.controller.tableScale * 100))
-        }, false);
-
-        this.createButton(groupClass, "align-horizontal-space-around", "fit table to screen", () => {
-            const size = this.controller.resizeTable(undefined, undefined, true);
-            tableSize.setValue(String(this.controller.tableScale * 100))
-        })*/
+        /*
+                // class
+                const tableSize = this.createDropdown(groupClass, "Table size", "", {
+                    mode: "single",
+                    itemsList: String(this.controller.tableScale * 100),
+                }, generateItems(1, 100, "%")
+                    , (value) => {
+                        const size = !isNaN(Number(value)) ? Number(value) : 1;
+                        this.controller.resizeTable(undefined, size);
+                    })
+        
+                this.createButton(groupClass, Icons.increaseSize, "Increase Table Size", () => {
+                    const size = this.controller.resizeTable(10)
+                    tableSize.setValue(String(this.controller.tableScale * 100))
+                }, false);
+        
+                this.createButton(groupClass, Icons.decreaseSize, "Decrease Table Size", () => {
+                    const size = this.controller.resizeTable(-10)
+                    tableSize.setValue(String(this.controller.tableScale * 100))
+                }, false);
+        
+                this.createButton(groupClass, "align-horizontal-space-around", "fit table to screen", () => {
+                    const size = this.controller.resizeTable(undefined, undefined, true);
+                    tableSize.setValue(String(this.controller.tableScale * 100))
+                })*/
 
         const Classdropdown = this.createDropdown(groupClass, "Table class", "Set table class", {
             mode: "multi",

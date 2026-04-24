@@ -13,13 +13,13 @@
 - [x] someway to resize the table
 - [x] change dropdown to type input
 - [x] cell alignment
+- [x] insert image by paste
 
 </details>
 
 <details open>
 <summary>In process</summary>
 
-- [ ] insert image
 - [ ] make convertMDTable competible with different detachment location
 - [ ] font color
 - [ ] font size

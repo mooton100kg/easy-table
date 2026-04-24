@@ -2,11 +2,19 @@ import { App, Editor, MarkdownView, Modal, Notice, Plugin } from 'obsidian';
 import { DEFAULT_SETTINGS, MyPluginSettings, SampleSettingTab } from "./settings";
 
 import { TableEditorView, VIEW_TYPE_TABLE_EDITOR } from './TableEditorView';
+import { PluginController } from './PluginController';
 
 export default class EasyPluginPlugin extends Plugin {
 	settings: MyPluginSettings;
+	controller: PluginController;
 
 	async onload() {
+		this.controller = new PluginController(this.app);
+
+		this.registerDomEvent(document, "paste", (e) =>
+			this.controller.handlePaste(e)
+		);
+
 		this.registerView(
 			VIEW_TYPE_TABLE_EDITOR,
 			(leaf) => new TableEditorView(leaf)
@@ -24,7 +32,7 @@ export default class EasyPluginPlugin extends Plugin {
 					selection.includes("<table") &&
 					selection.includes("</table>");
 
-				const isMDTable = isInsideMDTable(editor);
+				const isMDTable = this.controller.isInsideMDTable(editor);
 
 				if (hasHTMLTable) {
 					//if selection is <table> then add "Edit Table" menu
@@ -67,8 +75,8 @@ export default class EasyPluginPlugin extends Plugin {
 						item
 							.setTitle("Convert to HTML Table")
 							.onClick(() => {
-								const table = getMDTable(editor);
-								const html = MDToHTMLTable(table.text);
+								const table = this.controller.getMDTable(editor);
+								const html = this.controller.MDToHTMLTable(table.text);
 
 								editor.replaceRange(html, table.from, table.to);
 							})
@@ -80,7 +88,7 @@ export default class EasyPluginPlugin extends Plugin {
 			id: "create-html-table",
 			name: "Create HTML Table",
 			editorCallback: (editor: Editor, view: MarkdownView) => {
-				const table = createHTMLTable(2, 2);
+				const table = this.controller.createHTMLTable(2, 2);
 
 				editor.replaceSelection(table);
 			}
@@ -103,117 +111,3 @@ export default class EasyPluginPlugin extends Plugin {
 	}
 }
 
-function isInsideMDTable(editor: Editor): boolean {
-	const cursor = editor.getCursor();
-	const line = editor.getLine(cursor.line);
-
-	if (!line) return false;
-
-	return line.includes("|");
-}
-
-function getMDTable(editor: Editor) {
-	const cursor = editor.getCursor();
-	let start = cursor.line;
-	let end = cursor.line;
-
-	const lineCount = editor.lineCount();
-
-	// expand upward
-	while (start > 0 && editor.getLine(start - 1)?.includes("|")) {
-		start--;
-	}
-
-	// expand downward
-	while (end < lineCount - 1 && editor.getLine(end + 1)?.includes("|")) {
-		end++;
-	}
-
-	const lines: String[] = [];
-	for (let i = start; i <= end; i++) {
-		let line = editor.getLine(i);
-		line = line.replace(/!\[\[(.*?)\]\]/g, (match, content) => {
-			const [file, size] = content.replace(/\\\|/g, "|").split("|");
-
-			console.log("file", file);
-			console.log("size", size);
-
-			let w = "";
-			let h = "";
-
-			if (size) {
-				const parts = size.split("x");
-				w = parts[0] || "500";
-				h = parts[1];
-			}
-
-			let attrs = "";
-
-			if (w) attrs += `width="${w}"`;
-			if (h) attrs += ` height="${h}"`;
-
-			return `<img src="image/${file}" ${attrs}>`;
-		});
-
-		lines.push(line);
-	}
-
-	return {
-		text: lines,
-		from: { line: start, ch: 0 },
-		to: { line: end, ch: editor.getLine(end)?.length || 0 }
-	}
-}
-
-function MDToHTMLTable(md: String[]): string {
-	const headers = md[0]
-		?.split("|")
-		.slice(1, -1)
-		.map(h => h.trim());
-
-	const body = md.splice(2); //skip seperator
-	if (!headers || !body) return "";
-
-	let html = `<div class="table-wrapper"><table><tbody><tr>`;
-
-	headers.forEach(h => {
-		if (!h) h = " ";
-		html += `<td>${h}</td>`;
-	});
-
-	html += `</tr>`
-
-	body.forEach(row => {
-		const cols = row
-			.split("|")
-			.slice(1, -1)
-			.map(c => c.trim());
-
-		html += `<tr>`
-		cols.forEach(c => {
-			if (!c) c = " ";
-			html += `<td>${c}</td>`
-		})
-		html += `</tr>`
-	})
-	html += `</tbody></table></div>`
-
-	return html;
-
-}
-
-function createHTMLTable(rows: number, cols: number): string {
-	let html = `<div class="table-wrapper"><table><tbody>`;
-
-	for (let r = 0; r < rows; r++) {
-		html += `<tr>`;
-		for (let c = 0; c < cols; c++) {
-			html += "<td> </td>";
-		}
-		html += `</tr>`;
-	}
-
-	html += `</tbody></table></div>`;
-
-	return html;
-}
