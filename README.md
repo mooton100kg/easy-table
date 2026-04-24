@@ -2,6 +2,8 @@
 
 ## Feature
 
+<details>
+<summary>Implemented</summary>
 - [x] add th
 - [x] table orientation (side / top)
 - [x] able to merge with merged cell
@@ -10,6 +12,8 @@
 - [x] someway to resize the table
 - [x] change dropdown to type input
 - [x] cell alignment
+</details>
+
 - [ ] insert image
 - [ ] make convertMDTable competible with different detachment location
 - [ ] font color
@@ -24,6 +28,6 @@
 - [x] fix delete row / col
 - [x] fix add row / col with th
 - [ ] fix convert MD table
-  - [ ] image
-  - [ ] preview table class
+  - [x] image
+  - [ ] previous table class
 - [ ] link resize btn and input
