@@ -4,6 +4,7 @@
 
 <details>
 <summary>Implemented</summary>
+
 - [x] add th
 - [x] table orientation (side / top)
 - [x] able to merge with merged cell
@@ -12,7 +13,11 @@
 - [x] someway to resize the table
 - [x] change dropdown to type input
 - [x] cell alignment
+
 </details>
+
+<details open>
+<summary>In process</summary>
 
 - [ ] insert image
 - [ ] make convertMDTable competible with different detachment location
@@ -21,13 +26,26 @@
 - [ ] clean up toolbar
 - [ ] undo/reundo
 
+</details>
+
 ![toolbar](toolbar.jpeg)
 
 ## Bug fix
 
+<details>
+<summary>Implemented</summary>
+
 - [x] fix delete row / col
 - [x] fix add row / col with th
+
+</details>
+
+<details open>
+<summary>In process</summary>
+
 - [ ] fix convert MD table
   - [x] image
   - [ ] previous table class
 - [ ] link resize btn and input
+
+</details>
