@@ -142,11 +142,11 @@ export class PluginController {
         const body = md.splice(2); //skip seperator
         if (!headers || !body) return "";
 
-        let html = `<div class="table-wrapper"><table><tbody><tr>`;
+        let html = `<div class="table-wrapper"><table><tr>`;
 
         headers.forEach(h => {
             if (!h) h = " ";
-            html += `<td>${h}</td>`;
+            html += `<th>${h}</th>`;
         });
 
         html += `</tr>`
@@ -164,14 +164,14 @@ export class PluginController {
             })
             html += `</tr>`
         })
-        html += `</tbody></table></div>`
+        html += `</table></div>`
 
         return html;
 
     }
 
     createHTMLTable(rows: number, cols: number): string {
-        let html = `<div class="table-wrapper"><table><tbody>`;
+        let html = `<div class="table-wrapper"><table>`;
 
         for (let r = 0; r < rows; r++) {
             html += `<tr>`;
@@ -181,7 +181,7 @@ export class PluginController {
             html += `</tr>`;
         }
 
-        html += `</tbody></table></div>`;
+        html += `</table></div>`;
 
         return html;
     }

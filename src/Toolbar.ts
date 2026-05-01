@@ -1,7 +1,7 @@
-import { setIcon } from "obsidian";
-
+import { setButtonIcon } from "utils/icon";
 import { Icons } from "./icon";
 import { TableEditorController } from "./TableEditorController";
+import { createButton } from "utils/dom";
 
 export class TableToolbar {
     container: HTMLElement;
@@ -31,41 +31,16 @@ export class TableToolbar {
         this.createButton(groupClass, "bug", "debug", () => {
             console.log();
         });
-        /*
-                // class
-                const tableSize = this.createDropdown(groupClass, "Table size", "", {
-                    mode: "single",
-                    itemsList: String(this.controller.tableScale * 100),
-                }, generateItems(1, 100, "%")
-                    , (value) => {
-                        const size = !isNaN(Number(value)) ? Number(value) : 1;
-                        this.controller.resizeTable(undefined, size);
-                    })
-        
-                this.createButton(groupClass, Icons.increaseSize, "Increase Table Size", () => {
-                    const size = this.controller.resizeTable(10)
-                    tableSize.setValue(String(this.controller.tableScale * 100))
-                }, false);
-        
-                this.createButton(groupClass, Icons.decreaseSize, "Decrease Table Size", () => {
-                    const size = this.controller.resizeTable(-10)
-                    tableSize.setValue(String(this.controller.tableScale * 100))
-                }, false);
-        
-                this.createButton(groupClass, "align-horizontal-space-around", "fit table to screen", () => {
-                    const size = this.controller.resizeTable(undefined, undefined, true);
-                    tableSize.setValue(String(this.controller.tableScale * 100))
-                })*/
 
         const Classdropdown = this.createDropdown(groupClass, "Table class", "Set table class", {
             mode: "multi",
-            itemsList: this.controller.table?.className.split(" ") || []
+            itemsList: this.controller.getTableClasses()
         }, [
             { label: "Spread", value: "spread" },
             { label: "Center", value: "center" },
             { label: "Middle", value: "middle" },
         ], (value) => {
-            this.controller.table?.classList.toggle(value);
+            this.controller.toggleTableClass(value);
         });
 
         this.createButton(groupClass, Icons.topTable, "Set Top Header", () => {
@@ -163,35 +138,25 @@ export class TableToolbar {
         icon: string,
         title: string,
         action: () => void,
-        focus: boolean = true,
+        requireFocus: boolean = true,
     ) {
-        const btn = parent.createEl("button");
+        const btn = createButton(parent);
 
-        // check between custom vs built-in icon
-        if (icon.trim().startsWith("<svg")) {
-            // custom
-            btn.innerHTML = icon;
-        }
-        else {
-            // built-in
-            setIcon(btn, icon);
-        }
+        setButtonIcon(btn, icon);
 
         // add title
         btn.setAttribute("title", title);
 
         // add onclick action
         btn.onclick = () => {
-            if (!focus) {
-            }
-            else {
-                // check if there are any focused cell
-                const cell = this.controller.activeCell;
-                if (!cell) return;
+            if (requireFocus && !this.controller.hasActiveCell()) {
+                return;
             }
 
             action();
         }
+
+        return btn;
     }
 
     createDropdown(
@@ -258,7 +223,7 @@ export class TableToolbar {
 
         // ================ arrow
         const arrow = wrapper.createEl("button");
-        setIcon(arrow, "chevron-down");
+        setButtonIcon(arrow, "chevron-down");
         arrow.classList.add("dropdown-arrow");
 
         // ================ menu
@@ -361,7 +326,7 @@ export class TableToolbar {
 
         // ============ arrow
         const arrow = wrapper.createEl("button");
-        setIcon(arrow, "chevron-down");
+        setButtonIcon(arrow, "chevron-down");
         arrow.classList.add("color-picker-arrow");
 
         // ============ create color picker

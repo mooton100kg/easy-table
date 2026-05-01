@@ -70,15 +70,6 @@ export class TableEditorView extends ItemView {
         // create controller
         const controller = new TableEditorController(tableClone, wrapper);
 
-        Array.from(tableClone.rows).forEach((tr) => {
-            Array.from(tr.cells).forEach((td) => {
-                td.contentEditable = "true";
-
-                controller.handleEnterKey(td);
-                controller.bindCell(td);
-            });
-        });
-
         // create toolbar
         new TableToolbar(toolbarEl, controller);
 

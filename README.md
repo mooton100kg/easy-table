@@ -21,6 +21,7 @@
 <details open>
 <summary>In process</summary>
 
+- [ ] let user choose default class for table
 - [ ] font color
 - [ ] font size
 - [ ] clean up toolbar
