@@ -274,12 +274,10 @@ export class TableOperation {
         if (!pos) return;
 
         // targetCol = 2
-        let targetCol = pos.topCol;
+        let targetCol = pos.bottomCol;
         // check if cell colSpan is the last cell in the col
         // true -> add new cell to the end of the col
         if (pos.bottomCol >= grid[0]!.length - 1) { type = "add"; }
-        // if current cell has colspan -> add new col to the end of the colspan
-        else if (cell.colSpan > 1) { targetCol = pos.bottomCol; }
 
         for (let r = 0; r < grid.length; r++) {
             // if cell is header create th
@@ -297,7 +295,7 @@ export class TableOperation {
             if (type === "insert") {
                 // row 1 : [d] [d] {e} [e]
                 // row 2 : [f] [f] {f} [g]
-                const referenceCell = grid[r]![targetCol]!;
+                let referenceCell: HTMLTableCellElement | null = grid[r]![targetCol]!;
                 // row 1 : [d] [d] [e] {e} -> refPos.bottomCol = 3
                 // row 2 : [f] [f] {f} [g] -> refPos.bottomCol = 2
                 const refPos = TableGrid.getCellPosition(referenceCell, grid);
@@ -308,7 +306,14 @@ export class TableOperation {
                 }
                 // case 2 : refCell outside colSpan -> insert new cell
                 else {
-                    table.rows[r]!.insertAfter(el, referenceCell);
+                    for (let c = targetCol + 1; c < grid[r]!.length; c++) {
+                        if (table.rows[r]?.contains(grid[r]![c]!)) {
+                            table.rows[r]!.insertBefore(el, grid[r]![c]!);
+                            break;
+                        } else if (c === grid[r]!.length - 1) {
+                            table.rows[r]!.appendChild(el);
+                        }
+                    }
                 }
             }
             else if (type === "add") {
