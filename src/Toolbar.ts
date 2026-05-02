@@ -259,6 +259,7 @@ export class TableToolbar {
 
                 const value = input.value;
                 if (!selectedValues?.has(value)) setSelected(value);
+                input.value = "";
             }
         });
 

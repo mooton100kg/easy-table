@@ -1,12 +1,10 @@
 import { TableState } from "../core/TableState";
 import { TableGrid } from "../core/TableGrid";
-import { CellBinder } from "../handlers/CellBinder";
-import { expandRangeToElement, removeAllSpans } from "../utils/dom";
+import { expandRangeToElement, moveCursorTo, removeAllSpans } from "../utils/dom";
 
 export class TableOperation {
     constructor(
         private state: TableState,
-        private binder: CellBinder
     ) { }
 
     // Convert between td and th
@@ -25,9 +23,6 @@ export class TableOperation {
         Array.from(cell.attributes).forEach((attr) => {
             newCell.setAttribute(attr.name, attr.value);
         });
-
-        // bind cell
-        this.binder.bind(newCell);
 
         // tranfer activeCell/anchorCell
         if (this.state.activeCell === cell) {
@@ -63,6 +58,7 @@ export class TableOperation {
         this.state.table?.classList.toggle("top-header");
         const grid = TableGrid.getGrid(this.state.table!);
 
+        let newHeaderCells: HTMLTableCellElement[] = [];
         for (let c = 0; c < grid[0]!.length; c++) {
             const cell = grid[0]![c]!;
             this.toggleScope(cell, 0, c, "col");
@@ -73,8 +69,12 @@ export class TableOperation {
             }
 
             this.tdOrTh(cell);
+            newHeaderCells.push(cell);
         }
+
+        return newHeaderCells;
     }
+
     setSideHeader() {
         this.state.table?.classList.toggle("side-header");
         const grid = TableGrid.getGrid(this.state.table!);
@@ -123,10 +123,49 @@ export class TableOperation {
         this.state.tableScale = newScale;
     }
 
-    // add row function
-    addRow(type: "insert" | "add") {
+    getNextCell(): HTMLTableCellElement[] | null {
+        let newCells: HTMLTableCellElement[] | null = [];
+
         const ctx = this.state.getContext();
-        if (!ctx) return;
+        if (!ctx) return null;
+        const { cell, row, table } = ctx;
+
+
+        const grid = TableGrid.getGrid(table);
+        const pos = TableGrid.getCellPosition(cell, grid);
+        if (!pos) return null;
+
+        let nextCell: HTMLTableCellElement | null;
+        // if cell is not in the last column, return next cell in the same row
+        if (pos.bottomCol + 1 < grid[pos.bottomRow]!.length) {
+            nextCell = grid[pos.bottomRow]![pos.bottomCol + 1]!;
+        } else {
+            // if cell is in the last column, return first cell of the next row
+            if (pos.bottomRow + 1 < grid.length) {
+                nextCell = grid[pos.bottomRow + 1]![0]!;
+            } else {
+                // if cell is in the last row, create new row
+                newCells = this.addRow("add");
+                nextCell = newCells?.[0] ?? null;
+            }
+        }
+        if (!nextCell) return null;
+
+        this.state.clearSelectedCells();
+        this.state.setActiveCell(nextCell);
+        this.state.selectedCells.add(nextCell);
+        nextCell.classList.add("selected-cell");
+
+        nextCell.focus();
+        moveCursorTo(nextCell);
+
+        return newCells;
+    }
+
+    // add row function
+    addRow(type: "insert" | "add"): HTMLTableCellElement[] | null {
+        const ctx = this.state.getContext();
+        if (!ctx) return null;
         const { cell, row, table } = ctx;
 
         // find index of current cell
@@ -135,7 +174,7 @@ export class TableOperation {
         // {b} [d] [e]
         // [c] [d] [f]
         const pos = TableGrid.getCellPosition(cell, grid);
-        if (!pos) return;
+        if (!pos) return null;
 
         let targetRow = pos.topRow;
         // check if cell rowSpan is the last cell in the row
@@ -174,7 +213,6 @@ export class TableOperation {
             const el = document.createElement(tagName);
 
             el.contentEditable = "true";
-            this.binder.bind(el);
 
             if (tagName === "th") this.toggleScope(el, targetRow + 1, i, "row");
 
@@ -188,6 +226,8 @@ export class TableOperation {
         else if (type === "insert") {
             row.parentNode?.insertAfter(newRow, table.rows[targetRow]!);
         }
+
+        return Array.from(newRow.cells);
     }
 
     // delete row function
@@ -219,6 +259,8 @@ export class TableOperation {
 
     // add col function
     addCol(type: "insert" | "add") {
+        let newCol: HTMLTableCellElement[] | null = [];
+
         const ctx = this.state.getContext();
         if (!ctx) return;
         const { cell, row, table } = ctx;
@@ -247,7 +289,8 @@ export class TableOperation {
             const el = document.createElement(tagName);
 
             el.contentEditable = "true";
-            this.binder.bind(el);
+
+            newCol.push(el);
 
             if (tagName === "th") this.toggleScope(el, r, targetCol, "col");
 
@@ -272,6 +315,8 @@ export class TableOperation {
                 table.rows[r]!.appendChild(el);
             }
         }
+
+        return newCol;
     }
 
     // delete col function
@@ -357,19 +402,21 @@ export class TableOperation {
         first.classList.add("selected-cell");
     }
 
-    unmergeCells() {
+    unmergeCells(): HTMLTableCellElement[] | null {
+        let newCells: HTMLTableCellElement[] = [];
+
         const ctx = this.state.getContext();
-        if (!ctx) return;
+        if (!ctx) return null;
         const { cell, row, table } = ctx;
 
         const grid = TableGrid.getGrid(table);
         const pos = TableGrid.getCellPosition(cell, grid);
-        if (!pos) return;
+        if (!pos) return null;
 
         const rowSpan = cell.rowSpan || 1;
         const colSpan = cell.colSpan || 1;
 
-        if (rowSpan === 1 && colSpan === 1) return;
+        if (rowSpan === 1 && colSpan === 1) return null;
 
         cell.rowSpan = 1;
         cell.colSpan = 1;
@@ -403,7 +450,7 @@ export class TableOperation {
 
                 const el = document.createElement(tagName) as HTMLTableCellElement;
                 el.contentEditable = "true";
-                this.binder.bind(el);
+                newCells.push(el);
                 if (tagName === "th") { this.toggleScope(el, rowPos, colPos, scope) }
 
                 // insert new cell to the correct position
@@ -411,6 +458,7 @@ export class TableOperation {
                 tr?.insertBefore(el, edgeCell);
             }
         }
+        return newCells;
     }
 
     setAlignment(options: {

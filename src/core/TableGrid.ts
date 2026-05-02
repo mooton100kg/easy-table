@@ -1,4 +1,10 @@
 export class TableGrid {
+
+    /**
+     * 
+     * @param Grid 
+     * @returns grid[row][col] -> HTMLTableCellElement
+     */
     // convert html table to 2d grid of cells -> grid[row][col]
     static getGrid(table: HTMLTableElement): HTMLTableCellElement[][] {
         const grid: HTMLTableCellElement[][] = [];

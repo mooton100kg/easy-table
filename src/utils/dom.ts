@@ -1,3 +1,5 @@
+import { TableOperation } from "operations/TableOperations";
+
 export function getScale(el: HTMLElement): number {
     const transform = getComputedStyle(el).transform;
 
@@ -101,3 +103,4 @@ export function createInput(parent: HTMLElement, placeholder?: string) {
     parent.appendChild(el);
     return el;
 }
+

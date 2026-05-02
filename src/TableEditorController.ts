@@ -3,18 +3,23 @@ import { SelectionManager } from "selection/SelectionManager";
 import { CellBinder } from "handlers/CellBinder";
 import { TableOperation } from "operations/TableOperations";
 import { TableSerializer } from "serializer/TableSerializer";
+import { TableKeyboard } from "keyboard/TableKeyboard";
 
 export class TableEditorController {
     state: TableState;
     selection: SelectionManager;
     binder: CellBinder;
     ops: TableOperation;
+    keyboard: TableKeyboard;
 
     constructor(table: HTMLTableElement, tableContainer: Element) {
         this.state = new TableState(table, tableContainer);
         this.selection = new SelectionManager(this.state);
-        this.binder = new CellBinder(this.state, this.selection);
-        this.ops = new TableOperation(this.state, this.binder);
+        this.ops = new TableOperation(this.state);
+        this.keyboard = new TableKeyboard({
+            getNextCell: () => this.getNextCell(),
+        });
+        this.binder = new CellBinder(this.state, this.selection, this.keyboard);
 
         this.init();
     }
@@ -31,6 +36,12 @@ export class TableEditorController {
         })
     }
 
+    private getNextCell() {
+        const newCells = this.ops.getNextCell();
+        if (!newCells) return;
+        this.binder.bind(newCells);
+    }
+
     hasActiveCell(): boolean {
         return !!this.state.activeCell;
     }
@@ -42,12 +53,16 @@ export class TableEditorController {
     // ops
     addRow(type: "insert" | "add") {
         if (!this.hasActiveCell()) return;
-        this.ops.addRow(type);
+        const newCells = this.ops.addRow(type);
+        if (!newCells) return;
+        this.binder.bind(newCells);
     }
 
     addCol(type: "insert" | "add") {
         if (!this.hasActiveCell()) return;
-        this.ops.addCol(type);
+        const newCells = this.ops.addCol(type);
+        if (!newCells) return;
+        this.binder.bind(newCells);
     }
 
     deleteRow() {
@@ -65,7 +80,9 @@ export class TableEditorController {
     }
 
     unmergeCells() {
-        this.ops.unmergeCells();
+        const newCells = this.ops.unmergeCells();
+        if (!newCells) return;
+        this.binder.bind(newCells);
     }
 
     setAlignment(option: {
@@ -76,7 +93,9 @@ export class TableEditorController {
     }
 
     setTopHeader() {
-        this.ops.setTopHeader();
+        const newHeaderCells = this.ops.setTopHeader();
+
+        this.binder.bind(newHeaderCells);
     }
 
     setSideHeader() {
