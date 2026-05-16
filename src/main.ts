@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin } from 'obsidian';
+import { Editor, MarkdownView, Plugin, Workspace } from 'obsidian';
 import { DEFAULT_SETTINGS, MyPluginSettings, SampleSettingTab } from "./settings";
 
 import { TableEditorView, VIEW_TYPE_TABLE_EDITOR } from './TableEditorView';
@@ -48,19 +48,7 @@ export default class EasyPluginPlugin extends Plugin {
 								const selection = editor.getSelection();
 								if (!selection) return;
 
-								// open custom tab + prevent multiple tabs
-								const leaf =
-									this.app.workspace.getLeavesOfType(VIEW_TYPE_TABLE_EDITOR)[0]
-									?? this.app.workspace.getLeaf(true);
-
-								await leaf.setViewState({
-									type: VIEW_TYPE_TABLE_EDITOR,
-									active: true,
-								});
-
-								const view = leaf.view as TableEditorView;
-
-								view.setContext({
+								this.controller.OpenTableEditor({
 									html: selection,
 									editor: editor,
 									from: editor.getCursor("from"),
@@ -90,7 +78,12 @@ export default class EasyPluginPlugin extends Plugin {
 			editorCallback: (editor: Editor, view: MarkdownView) => {
 				const table = this.controller.createHTMLTable(2, 2);
 
-				editor.replaceSelection(table);
+				this.controller.OpenTableEditor({
+					html: table,
+					editor: editor,
+					from: editor.getCursor("from"),
+					to: editor.getCursor("to"),
+				});
 			}
 		});
 

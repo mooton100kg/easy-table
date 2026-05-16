@@ -1,10 +1,26 @@
-import { App, Editor } from "obsidian";
+import { App, Editor, EditorPosition } from "obsidian";
+
+import { TableEditorView, VIEW_TYPE_TABLE_EDITOR } from './TableEditorView';
 
 export class PluginController {
     app: App;
 
     constructor(app: App) {
         this.app = app;
+    }
+
+    async OpenTableEditor(context: EditorContext) {
+        const leaf =
+            this.app.workspace.getLeavesOfType(VIEW_TYPE_TABLE_EDITOR)[0]
+            ?? this.app.workspace.getLeaf(true);
+
+        await leaf.setViewState({
+            type: VIEW_TYPE_TABLE_EDITOR,
+            active: true,
+        });
+
+        const view = leaf.view as TableEditorView;
+        view.setContext(context);
     }
 
     async handlePaste(e: ClipboardEvent) {
@@ -185,4 +201,11 @@ export class PluginController {
 
         return html;
     }
+}
+
+type EditorContext = {
+    editor: any;
+    from: EditorPosition;
+    to: EditorPosition;
+    html: string;
 }

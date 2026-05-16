@@ -85,6 +85,25 @@ export class TableEditorView extends ItemView {
 
             editor.replaceRange(updatedHtml, from, to);
 
+            // find end position of inserted content
+            const startOffset = editor.posToOffset(from);
+            const endOffset = startOffset + updatedHtml.length;
+            const endPos = editor.offsetToPos(endOffset);
+
+            // if inserted content ends at last line, create a new line
+            if (endPos.line >= editor.lastLine()) {
+                editor.replaceRange("\n", {
+                    line: editor.lastLine(),
+                    ch: editor.getLine(editor.lastLine()).length
+                });
+            }
+
+            // move cursor to next line
+            editor.setCursor({
+                line: endPos.line + 1,
+                ch: 0
+            });
+
             // close tab after save
             this.leaf.detach();
         };
