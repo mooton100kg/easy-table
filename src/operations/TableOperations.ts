@@ -113,8 +113,6 @@ export class TableOperation {
 
             const tableWidth = this.state.table.scrollWidth;
             const containerWidth = this.state.tableContainer!.clientWidth;
-            console.log(containerWidth)
-            console.log(this.state.tableContainer)
             newScale = containerWidth / tableWidth;
 
         }
@@ -128,7 +126,7 @@ export class TableOperation {
 
         const ctx = this.state.getContext();
         if (!ctx) return null;
-        const { cell, row, table } = ctx;
+        const { cell, table } = ctx;
 
 
         const grid = TableGrid.getGrid(table);
@@ -234,7 +232,7 @@ export class TableOperation {
     deleteRow() {
         const ctx = this.state.getContext();
         if (!ctx) return;
-        const { cell, row, table } = ctx;
+        const { cell, table } = ctx;
 
         // find index of current cell
         const grid = TableGrid.getGrid(table);
@@ -263,7 +261,7 @@ export class TableOperation {
 
         const ctx = this.state.getContext();
         if (!ctx) return;
-        const { cell, row, table } = ctx;
+        const { cell, table } = ctx;
 
         // find index of current cell
         const grid = TableGrid.getGrid(table);
@@ -328,7 +326,7 @@ export class TableOperation {
     deleteCol() {
         const ctx = this.state.getContext();
         if (!ctx) return;
-        const { cell, row, table } = ctx;
+        const { cell, table } = ctx;
 
         // find index of current cell
         const grid = TableGrid.getGrid(table);
@@ -503,7 +501,6 @@ export class TableOperation {
         span.appendChild(cleanFragment);
 
         // insert back
-        console.log(span)
         range.insertNode(span);
 
         // clear selection

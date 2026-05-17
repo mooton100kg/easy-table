@@ -48,7 +48,7 @@ export default class EasyPluginPlugin extends Plugin {
 								const selection = editor.getSelection();
 								if (!selection) return;
 
-								this.controller.OpenTableEditor({
+								await this.controller.OpenTableEditor({
 									html: selection,
 									editor: editor,
 									from: editor.getCursor("from"),
@@ -75,16 +75,16 @@ export default class EasyPluginPlugin extends Plugin {
 		this.addCommand({
 			id: "create-html-table",
 			name: "Create HTML Table",
-			editorCallback: (editor: Editor, view: MarkdownView | MarkdownFileInfo) => {
+			editorCallback: (async (editor: Editor, view: MarkdownView | MarkdownFileInfo) => {
 				const table = this.controller.createHTMLTable(2, 2);
 
-				this.controller.OpenTableEditor({
+				await this.controller.OpenTableEditor({
 					html: table,
 					editor: editor,
 					from: editor.getCursor("from"),
 					to: editor.getCursor("to"),
 				});
-			}
+			})
 		});
 
 

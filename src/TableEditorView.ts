@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, Notice, MarkdownView, EditorPosition } from 'obsidian';
+import { ItemView, WorkspaceLeaf, Notice, EditorPosition, Editor } from 'obsidian';
 
 import { TableToolbar } from "./Toolbar";
 import { TableEditorController } from 'TableEditorController';
@@ -6,7 +6,7 @@ import { TableEditorController } from 'TableEditorController';
 export const VIEW_TYPE_TABLE_EDITOR = "table-editor-view";
 
 type EditorContext = {
-    editor: any;
+    editor: Editor;
     from: EditorPosition;
     to: EditorPosition;
     html: string;
@@ -54,7 +54,6 @@ export class TableEditorView extends ItemView {
 
         // detect if html is valid table
         if (!table || !wrapper) {
-            console.log(html)
             new Notice("Invalid table")
             this.onClose;
             return;

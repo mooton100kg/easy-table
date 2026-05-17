@@ -1,5 +1,3 @@
-import { Editor } from "obsidian";
-
 export class TableSerializer {
     //Convert table back to normal table
     static buildHtml(wrapper: Element, newTable: HTMLTableElement) {
