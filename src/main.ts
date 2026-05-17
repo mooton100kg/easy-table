@@ -1,12 +1,12 @@
-import { Editor, MarkdownView, Plugin, Workspace } from 'obsidian';
+import { Editor, MarkdownView, Plugin, MarkdownFileInfo } from 'obsidian';
 import { DEFAULT_SETTINGS, MyPluginSettings, SampleSettingTab } from "./settings";
 
 import { TableEditorView, VIEW_TYPE_TABLE_EDITOR } from './TableEditorView';
 import { PluginController } from './PluginController';
 
 export default class EasyPluginPlugin extends Plugin {
-	settings: MyPluginSettings;
-	controller: PluginController;
+	settings!: MyPluginSettings;
+	controller!: PluginController;
 
 	async onload() {
 		this.controller = new PluginController(this.app);
@@ -75,7 +75,7 @@ export default class EasyPluginPlugin extends Plugin {
 		this.addCommand({
 			id: "create-html-table",
 			name: "Create HTML Table",
-			editorCallback: (editor: Editor, view: MarkdownView) => {
+			editorCallback: (editor: Editor, view: MarkdownView | MarkdownFileInfo) => {
 				const table = this.controller.createHTMLTable(2, 2);
 
 				this.controller.OpenTableEditor({

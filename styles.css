@@ -44,9 +44,10 @@ th[scope="corner"] {
 
 .spread td,
 .spread th {
-    white-space: noewrap;
-    width: max-content;
+    width: 99%;
+    white-space: nowrap;
 }
+
 
 .center td:not(:has(ul)),
 .center th:not(:has(ul)) {
